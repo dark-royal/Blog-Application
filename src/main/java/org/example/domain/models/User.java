@@ -15,5 +15,5 @@ public class User {
     private String lastName;
     private boolean emailVerified;
     private boolean enabled;
-    private Set<UserRoles> roles;
+//    private Set<UserRoles> roles;
 }
