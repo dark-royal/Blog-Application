@@ -7,6 +7,8 @@ import org.example.domain.exceptions.UserAlreadyExistException;
 import org.example.domain.exceptions.UserNotFoundException;
 import org.example.domain.models.User;
 
+import java.util.Optional;
+
 public interface IdentityManagementOutputPort {
 
     User createUser(User user) throws IdentityManagerException, UserAlreadyExistException;
@@ -16,4 +18,7 @@ public interface IdentityManagementOutputPort {
 
     User loginUser(User user) throws AuthenticationException;
 
+    User resetPassword(User user) throws AuthenticationException, UserNotFoundException;
+
+    Optional<User> getUserByEmail(String email) throws UserNotFoundException;
 }

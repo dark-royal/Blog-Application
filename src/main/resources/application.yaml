@@ -3,10 +3,12 @@ app:
   keycloak:
     admin:
       clientId: identity
-      clientSecret: hqmU0o2rN5K5aDf0vwRXXGNBidG9Kz4R
+      clientSecret: zyvcLJL6b3OVefAHT0CSmclYqK0A1H4e
     realm: UserIdentity
     serverUrl: http://localhost:9082
     tokenUrl: http://localhost:9082/realms/UserIdentity/protocol/openid-connect/token
+
+
 
 spring:
   security:
@@ -16,6 +18,4 @@ spring:
           issuer-uri: http://localhost:9082/realms/UserIdentity
           jwk-set-uri: http://localhost:8080/realms/UserIdentity/protocol/openid-connect/certs
 server:
-  port: 8081
-  servlet:
-    context-path: /auth
+  port: 8082

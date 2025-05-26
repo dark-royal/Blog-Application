@@ -36,7 +36,6 @@ public class KeycloakAdapterTest {
 
 
 
-
     @Test
     public void testThatUserCanBeCreated() throws IdentityManagerException {
         try {
@@ -108,8 +107,90 @@ public class KeycloakAdapterTest {
         assertThrows(AuthenticationException.class, () -> identityManagementOutputPort.loginUser(user));
     }
 
+    @Test
+    public void testThatUserCanResetPassword() throws Exception, UserNotFoundException, AuthenticationException, UserAlreadyExistException {
+
+        user = new User();
+        user.setId(300L);
+        user.setUsername("precious");
+        user.setPassword("password");
+        user.setEmail("precy@gmail.com");
+        user.setFirstName("lope");
+        user.setLastName("kemi");
+        user.setRole("user");
+
+        identityManagementOutputPort.createUser(user);
+
+        User resetRequest = new User();
+        resetRequest.setEmail(user.getEmail());
+        resetRequest.setPassword("newSecurePassword123!");
+
+        User result = identityManagementOutputPort.resetPassword(resetRequest);
+
+        assertNotNull(result);
+
+    }
+
+    @Test
+    public void testThatUserCanResetPassword_andCanLoginWithIt() throws Exception, UserNotFoundException, AuthenticationException, UserAlreadyExistException {
+
+        user = new User();
+        user.setId(300L);
+        user.setUsername("chichi");
+        user.setPassword("password");
+        user.setEmail("chichi@gmail.com");
+        user.setFirstName("lope");
+        user.setLastName("kemi");
+        user.setRole("user");
+
+        identityManagementOutputPort.createUser(user);
+
+        User resetRequest = new User();
+        resetRequest.setEmail(user.getEmail());
+        resetRequest.setPassword("newSecurePassword123!");
+
+        User result = identityManagementOutputPort.resetPassword(resetRequest);
+
+        assertNotNull(result);
+
+        User loginAttempt = new User();
+        loginAttempt.setEmail(user.getEmail());
+        loginAttempt.setPassword("newSecurePassword123!");
+        User loggedInUser = identityManagementOutputPort.loginUser(loginAttempt);
+
+        assertNotNull(loggedInUser.getAccessToken());
 
 
+    }
 
+    @Test
+    public void testThatUserCanResetPassword_LoginWithOldPassword_ThrowException() throws Exception, UserNotFoundException, AuthenticationException, UserAlreadyExistException {
+
+        user = new User();
+        user.setId(300L);
+        user.setUsername("ned");
+        user.setPassword("password");
+        user.setEmail("ned@gmail.com");
+        user.setFirstName("lope");
+        user.setLastName("kemi");
+        user.setRole("user");
+
+        identityManagementOutputPort.createUser(user);
+
+        User resetRequest = new User();
+        resetRequest.setEmail(user.getEmail());
+        resetRequest.setPassword("newSecurePassword123!");
+
+        User result = identityManagementOutputPort.resetPassword(resetRequest);
+
+        assertNotNull(result);
+
+        User loginAttempt = new User();
+        loginAttempt.setEmail(user.getEmail());
+        loginAttempt.setPassword("Password123!");
+        assertThrows(AuthenticationException.class,()->identityManagementOutputPort.loginUser(loginAttempt));
+
+
+    }
 
 }
