@@ -4,14 +4,13 @@ services:
     image: postgres:latest
     restart: always
     volumes:
-      - ./pgdata:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: Blog-Application
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     networks:
       - local
-
 
   keycloak:
     image: quay.io/keycloak/keycloak:25.0.0
@@ -22,7 +21,7 @@ services:
     ports:
       - "9082:8080"
     environment:
-      KEYCLOAK_ADMIN : admin
+      KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin@1234
       KC_DB: postgres
       KC_DB_SCHEMA: public
@@ -31,8 +30,11 @@ services:
       KC_DB_URL: jdbc:postgresql://postgres:5432/Blog-Application
       KC_HOSTNAME: localhost
       KC_FEATURES: token-exchange,admin-fine-grained-authz
-    #      KC_HTTP_RELATIVE_PATH: /keycloak
     networks:
       - local
+
 networks:
   local:
+
+volumes:
+  postgres_data:

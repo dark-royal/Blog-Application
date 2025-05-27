@@ -4,19 +4,24 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Set;
+import java.util.List;
+
 
 @Getter
 @Setter
 @Entity
 public class UserEntity {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String username;
     private String email;
     private String firstName;
+    private String password;
+    private String role;
+    @OneToMany
+    private List<PostEntity> posts;
     private String lastName;
     private boolean emailVerified;
     private boolean enabled;
-//    private Set<String> roles;
 }
