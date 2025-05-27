@@ -5,4 +5,6 @@ public class ErrorMessages {
     public static final String EMPTY_INPUT_ERROR = "input is empty";
     public static final String UNDEFINED = "input is not defined";
     public static final String USER_NOT_FOUND = "User not found";
+    public static final String POST_NOT_FOUND = "Post not found";
+    public static final String POST_ALREADY_EXIST = "Post already exists";
 }

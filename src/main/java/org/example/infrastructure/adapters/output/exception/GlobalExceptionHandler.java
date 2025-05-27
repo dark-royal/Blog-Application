@@ -1,6 +1,7 @@
 package org.example.infrastructure.adapters.output.exception;
 
 import org.example.domain.exceptions.IdentityManagerException;
+import org.example.domain.exceptions.PostAlreadyExistsException;
 import org.example.domain.exceptions.UserAlreadyExistException;
 import org.example.domain.exceptions.UserNotFoundException;
 import org.example.infrastructure.adapters.input.rest.data.response.ErrorResponse;
@@ -32,6 +33,16 @@ public class GlobalExceptionHandler {
                 Instant.now()
         );
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(PostAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handlePostExists(PostAlreadyExistsException ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                ex.getMessage(),
+                Instant.now()
+        );
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(UserNotFoundException.class)

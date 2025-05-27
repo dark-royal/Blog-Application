@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 
 @Getter
 @Setter
@@ -17,6 +19,8 @@ public class UserEntity {
     private String firstName;
     private String password;
     private String role;
+    @OneToMany
+    private List<PostEntity> posts;
     private String lastName;
     private boolean emailVerified;
     private boolean enabled;

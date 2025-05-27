@@ -53,35 +53,23 @@ public class UserService implements SignUpUseCase, LoginUseCase, ResetPasswordUs
     public User login(User user) throws UserNotFoundException, InvalidCredentialsException, AuthenticationException {
         validateInput(user.getEmail());
 
-        // 1. Authenticate with Keycloak (this contains tokens)
-        User keycloakUser = identityManagementOutputPort.loginUser(user);
+        identityManagementOutputPort.loginUser(user);
 
-        // 2. Get local user record
-        User foundUser = userPersistenceOutputPort.getUserByEmail(keycloakUser.getEmail());
+
+        User foundUser = userPersistenceOutputPort.getUserByEmail(user.getEmail());
         if (foundUser == null) {
             throw new UserNotFoundException(ErrorMessages.USER_NOT_FOUND);
         }
 
-//        // 3. Verify credentials
-//        if (!passwordEncoder.matches(user.getPassword(), foundUser.getPassword())) {
-//            throw new InvalidCredentialsException("Invalid login credentials");
-//        }
+        if (!(user.getPassword().equals(foundUser.getPassword()))) {
+            throw new InvalidCredentialsException("Invalid login credentials");
+        }
 
         if (!foundUser.isEnabled()) {
             throw new IllegalStateException("Account is not enabled");
         }
 
-        foundUser.setAccessToken(keycloakUser.getAccessToken());
-        foundUser.setRefreshToken(keycloakUser.getRefreshToken());
-        foundUser.setExpiresIn(keycloakUser.getExpiresIn());
-        foundUser.setRefreshExpiresIn(keycloakUser.getRefreshExpiresIn());
-        foundUser.setTokenType(keycloakUser.getTokenType());
-        foundUser.setIdToken(keycloakUser.getIdToken());
-        foundUser.setScope(keycloakUser.getScope());
-
-        log.info("User {} logged in successfully with token", user.getEmail());
-
-        log.info("User {} logged in. Token expires in: {}", user.getEmail(), foundUser.getExpiresIn());
+        log.info("User with email {} has logged in successfully", user.getEmail());
 
         return foundUser;
     }

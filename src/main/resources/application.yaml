@@ -9,13 +9,14 @@ app:
     tokenUrl: http://localhost:9082/realms/UserIdentity/protocol/openid-connect/token
 
 
-
 spring:
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:9082/realms/UserIdentity
-          jwk-set-uri: http://localhost:8080/realms/UserIdentity/protocol/openid-connect/certs
+          jwk-set-uri: http://localhost:9082/realms/UserIdentity/protocol/openid-connect/certs
 server:
   port: 8082
+keycloak:
+  principal-attribute: preferred_username

@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.keycloak.representations.idm.UserRepresentation;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class User {
@@ -16,6 +18,7 @@ public class User {
     protected String accessToken;
     @JsonProperty("expires_in")
     protected long expiresIn;
+    private List<Post> posts;
     private String tokenType;
     private String idToken;
     private String scope;
