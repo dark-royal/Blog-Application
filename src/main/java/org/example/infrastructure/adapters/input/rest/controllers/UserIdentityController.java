@@ -65,10 +65,9 @@ public class UserIdentityController {
         User authenticatedUser = loginUseCase.login(userIdentity);
         log.info("Authenticated user: {}", authenticatedUser.getEmail());
 
-        LoginUserResponse loginUserResponse = userRestMapper.toLoginUserResponse(authenticatedUser);
-
-        log.info("Mapped login user response: {}", loginUserResponse);
-        return ResponseEntity.ok(loginUserResponse);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(userRestMapper
+                        .toLoginUserResponse(authenticatedUser));
     }
 
 

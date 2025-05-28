@@ -32,20 +32,17 @@ public class PostService implements CreatePostUseCase, DeletePostUseCase{
         validateInput(post.getTitle());
         validateInput(post.getContent());
 
-            if(!userPersistenceOutputPort.existsById(user.getId())) {
-                throw new UserNotFoundException(ErrorMessages.USER_NOT_FOUND);
-            }
+        if(!userPersistenceOutputPort.existsById(user.getId())) {
+            throw new UserNotFoundException(ErrorMessages.USER_NOT_FOUND);
+        }
 
-            if(postPersistenceOutputPort.existsById(post.getId())){
-                throw new PostAlreadyExistsException(ErrorMessages.POST_ALREADY_EXIST);
-            }
+        if(postPersistenceOutputPort.existsByTitleAndUserId(post.getTitle(), user.getId())){
+            throw new PostAlreadyExistsException(ErrorMessages.POST_ALREADY_EXIST);
+        }
 
-            post.setUser(user);
-            post.setPublishedDate(LocalDateTime.now());
-            return postPersistenceOutputPort.savePost(post);
-
-
-
+        post.setUser(user);
+        post.setPublishedDate(LocalDateTime.now());
+        return postPersistenceOutputPort.savePost(post);
     }
 
 

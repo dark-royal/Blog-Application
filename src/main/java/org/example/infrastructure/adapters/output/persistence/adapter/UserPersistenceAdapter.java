@@ -46,11 +46,23 @@ public class UserPersistenceAdapter implements UserPersistenceOutputPort {
 
     }
 
-    @Override
+//    @Override
+//    public User getUserByEmail(String email) throws UserNotFoundException {
+//        validateInput(email);
+//        UserEntity entity = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(ErrorMessages.USER_NOT_FOUND));
+//        return userPersistenceMapper.toModel(entity);
+//    }
+
     public User getUserByEmail(String email) throws UserNotFoundException {
         validateInput(email);
-        UserEntity entity = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(ErrorMessages.USER_NOT_FOUND));
-        return userPersistenceMapper.toModel(entity);
+        log.info("Searching for user with email: {}", email);
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.error("User not found for email: {}", email);
+                    return new UserNotFoundException("User not found");
+                });
+        log.info("Found user: {}", user.getId());
+        return userPersistenceMapper.toModel(user);
     }
 
     @Override

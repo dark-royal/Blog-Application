@@ -63,5 +63,9 @@ public class PostPersistenceAdapter implements PostPersistenceOutputPort {
         return postRepository.existsById(id);
     }
 
+    @Override
+    public boolean existsByTitleAndUserId(String title, Long id) {
+        return postRepository.existsByTitleAndUserId(title, id);
+    }
 
 }

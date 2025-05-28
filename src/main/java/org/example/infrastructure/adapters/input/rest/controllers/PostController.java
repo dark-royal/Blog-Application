@@ -48,8 +48,9 @@ public class PostController {
     }
 
 
-    @DeleteMapping("post/{postId}")
-    public ResponseEntity<DeletePostResponse> deletePost(@AuthenticationPrincipal User user,  @PathVariable Long postId) throws UserNotFoundException, AccessDeniedException, PostNotFoundException {
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<DeletePostResponse> deletePost(@AuthenticationPrincipal User user,  @PathVariable("postId")
+    Long postId) throws UserNotFoundException, AccessDeniedException, PostNotFoundException {
         deletePostUseCase.deletePost(user,postId);
         DeletePostResponse response = new DeletePostResponse();
         response.setMessage("Successfully deleted post");

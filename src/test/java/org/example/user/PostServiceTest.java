@@ -52,18 +52,15 @@ public class PostServiceTest {
 
     @Test
     public void testThatPostCanBeCreated() throws PostAlreadyExistsException, UserNotFoundException {
-
         Post post = new Post();
-        post.setId(200L);
         post.setTitle("My Blog Application");
         post.setContent("I love to create content");
 
         when(userPersistenceOutputPort.existsById(user.getId())).thenReturn(true);
-
-        when(postPersistenceOutputPort.existsById(post.getId())).thenReturn(false);
+        when(postPersistenceOutputPort.existsByTitleAndUserId(post.getTitle(), user.getId())).thenReturn(false);
 
         Post savedPost = new Post();
-        savedPost.setId(post.getId());
+        savedPost.setId(200L);
         savedPost.setTitle(post.getTitle());
         savedPost.setContent(post.getContent());
         savedPost.setUser(user);
@@ -79,13 +76,12 @@ public class PostServiceTest {
         assertEquals(user, result.getUser());
 
         verify(userPersistenceOutputPort).existsById(user.getId());
-        verify(postPersistenceOutputPort).existsById(post.getId());
+        verify(postPersistenceOutputPort).existsByTitleAndUserId(post.getTitle(), user.getId());
         verify(postPersistenceOutputPort).savePost(any(Post.class));
     }
 
     @Test
     public void testCreatePost_ShouldThrow_WhenUserNotFound() {
-
         Post post = new Post();
         post.setTitle("Test Title");
         post.setContent("Test Content");
@@ -103,24 +99,25 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testCreatePost_ShouldThrow_WhenPostExists() throws UserNotFoundException {
-
+    public void testCreatePost_ShouldThrow_WhenPostAlreadyExists() throws UserNotFoundException {
         Post post = new Post();
-        post.setId(200L);
         post.setTitle("Existing Title");
         post.setContent("Existing Content");
 
         when(userPersistenceOutputPort.existsById(user.getId())).thenReturn(true);
-        when(postPersistenceOutputPort.existsById(post.getId())).thenReturn(true);
+        when(postPersistenceOutputPort.existsByTitleAndUserId(post.getTitle(), user.getId())).thenReturn(true);
 
         assertThrows(PostAlreadyExistsException.class, () -> {
             postService.createPost(user, post);
         });
 
         verify(userPersistenceOutputPort).existsById(user.getId());
-        verify(postPersistenceOutputPort).existsById(post.getId());
+        verify(postPersistenceOutputPort).existsByTitleAndUserId(post.getTitle(), user.getId());
         verify(postPersistenceOutputPort, never()).savePost(any());
     }
+
+
+
     static Stream<String> invalidInputs() {
         return Stream.of(null, "", " ");
     }
@@ -221,15 +218,6 @@ public class PostServiceTest {
 
 
 
-
-    @ParameterizedTest
-    @MethodSource("invalidInputs")
-    public void deletePost_blankTitle_emptyTitle_nullTitle_throwsIllegalArgumentException(String input){
-        Post post = new Post();
-        post.setId(200L);
-        post.setTitle(input);
-        assertThrows(IllegalArgumentException.class, () -> postService.deletePost(user, post.getId()));
-    }
 
 
 

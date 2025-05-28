@@ -13,4 +13,7 @@ public interface PostPersistenceOutputPort {
     Post getPostById(Long id) throws PostNotFoundException;
 
     boolean existsById(Long id);
+
+    boolean existsByTitleAndUserId(String title, Long id);
+
 }
