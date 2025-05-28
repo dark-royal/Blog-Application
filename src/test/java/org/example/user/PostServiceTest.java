@@ -1,6 +1,5 @@
 package org.example.user;
 
-import lombok.RequiredArgsConstructor;
 import org.example.application.port.output.PostPersistenceOutputPort;
 import org.example.application.port.output.UserPersistenceOutputPort;
 import org.example.domain.exceptions.PostAlreadyExistsException;
@@ -17,9 +16,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
@@ -62,7 +60,7 @@ public class PostServiceTest {
 
         when(userPersistenceOutputPort.existsById(user.getId())).thenReturn(true);
 
-        when(postPersistenceOutputPort.existsByTitle(post.getTitle())).thenReturn(false);
+        when(postPersistenceOutputPort.existsById(post.getId())).thenReturn(false);
 
         Post savedPost = new Post();
         savedPost.setId(post.getId());
@@ -81,7 +79,7 @@ public class PostServiceTest {
         assertEquals(user, result.getUser());
 
         verify(userPersistenceOutputPort).existsById(user.getId());
-        verify(postPersistenceOutputPort).existsByTitle(post.getTitle());
+        verify(postPersistenceOutputPort).existsById(post.getId());
         verify(postPersistenceOutputPort).savePost(any(Post.class));
     }
 
@@ -105,21 +103,22 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testCreatePost_ShouldThrow_WhenTitleExists() throws UserNotFoundException {
+    public void testCreatePost_ShouldThrow_WhenPostExists() throws UserNotFoundException {
 
         Post post = new Post();
+        post.setId(200L);
         post.setTitle("Existing Title");
         post.setContent("Existing Content");
 
         when(userPersistenceOutputPort.existsById(user.getId())).thenReturn(true);
-        when(postPersistenceOutputPort.existsByTitle(post.getTitle())).thenReturn(true);
+        when(postPersistenceOutputPort.existsById(post.getId())).thenReturn(true);
 
         assertThrows(PostAlreadyExistsException.class, () -> {
             postService.createPost(user, post);
         });
 
         verify(userPersistenceOutputPort).existsById(user.getId());
-        verify(postPersistenceOutputPort).existsByTitle(post.getTitle());
+        verify(postPersistenceOutputPort).existsById(post.getId());
         verify(postPersistenceOutputPort, never()).savePost(any());
     }
     static Stream<String> invalidInputs() {
@@ -142,4 +141,96 @@ public class PostServiceTest {
         post.setContent(content);
         assertThrows(IllegalArgumentException.class, () -> postService.createPost(user, post));
     }
+
+
+    @Test
+    public void testThatPostCanBeDeleted() throws UserNotFoundException, PostAlreadyExistsException, AccessDeniedException, PostNotFoundException {
+        Post post = new Post();
+        post.setId(200L);
+        post.setTitle("My Blog Application");
+        post.setContent("I love to create content");
+
+        Post postFromDb = new Post();
+        postFromDb.setId(post.getId());
+        postFromDb.setTitle(post.getTitle());
+        postFromDb.setContent(post.getContent());
+        postFromDb.setUser(user);
+        postFromDb.setPublishedDate(LocalDateTime.now());
+
+        when(userPersistenceOutputPort.existsById(user.getId())).thenReturn(true);
+        when(postPersistenceOutputPort.getPostById(post.getId())).thenReturn(postFromDb);
+        when(postPersistenceOutputPort.savePost(any(Post.class))).thenReturn(postFromDb);
+
+
+        Post result = postService.createPost(user, post);
+
+        assertNotNull(result);
+        assertEquals(post.getTitle(), result.getTitle());
+        assertEquals(post.getContent(), result.getContent());
+        assertEquals(user, result.getUser());
+
+        postService.deletePost(user, post.getId());
+        verify(postPersistenceOutputPort).deletePost(postFromDb);
+    }
+
+
+    @Test
+    void deletePost_userDoesNotExist_throwsUserNotFoundException() {
+        Post post = new Post();
+        post.setId(200L);
+        post.setTitle("Test Post");
+        post.setContent("Test Content");
+
+        when(userPersistenceOutputPort.existsById(user.getId())).thenReturn(false);
+
+        assertThrows(UserNotFoundException.class, () -> postService.deletePost(user, post.getId()));
+
+        verify(postPersistenceOutputPort, never()).deletePost(any());
+    }
+
+    @Test
+    void deletePost_postNotFound_throwsPostNotFoundException() throws PostNotFoundException {
+        Post post = new Post();
+        post.setId(300L);
+        post.setTitle("Missing Post");
+        post.setContent("Missing Content");
+
+        when(userPersistenceOutputPort.existsById(user.getId())).thenReturn(true);
+        when(postPersistenceOutputPort.getPostById(post.getId())).thenThrow(new PostNotFoundException("Post not found"));
+
+        assertThrows(PostNotFoundException.class, () -> postService.deletePost(user, post.getId()));
+    }
+
+
+    @Test
+    void deletePost_userIsNotOwner_throwsAccessDeniedException() throws UserNotFoundException, PostNotFoundException {
+        Post post = new Post();
+        post.setId(400L);
+        post.setTitle("Someone else's post");
+
+        User anotherUser = new User();
+        anotherUser.setId(999L);
+
+        post.setUser(anotherUser);
+
+        when(userPersistenceOutputPort.existsById(user.getId())).thenReturn(true);
+        when(postPersistenceOutputPort.getPostById(post.getId())).thenReturn(post);
+
+        assertThrows(AccessDeniedException.class, () -> postService.deletePost(user, post.getId()));
+    }
+
+
+
+
+    @ParameterizedTest
+    @MethodSource("invalidInputs")
+    public void deletePost_blankTitle_emptyTitle_nullTitle_throwsIllegalArgumentException(String input){
+        Post post = new Post();
+        post.setId(200L);
+        post.setTitle(input);
+        assertThrows(IllegalArgumentException.class, () -> postService.deletePost(user, post.getId()));
+    }
+
+
+
 }

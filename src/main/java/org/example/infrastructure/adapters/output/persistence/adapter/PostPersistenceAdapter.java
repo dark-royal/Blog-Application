@@ -42,17 +42,25 @@ public class PostPersistenceAdapter implements PostPersistenceOutputPort {
         return savedPost;
     }
 
+
+
+
+
     @Override
-    public Post getByTitle(String title) throws PostNotFoundException {
-        PostEntity post = postRepository.findByTitle(title).orElseThrow(() -> new PostNotFoundException(ErrorMessages.POST_NOT_FOUND));
+    public void deletePost(Post post) {
+        postRepository.deleteById(post.getId());
+
+    }
+
+    @Override
+    public Post getPostById(Long id) throws PostNotFoundException {
+        PostEntity post = postRepository.findById(id).orElseThrow(()-> new PostNotFoundException(ErrorMessages.POST_NOT_FOUND));
         return postPersistenceMapper.toPost(post);
     }
 
     @Override
-    public boolean existsByTitle(String title) {
-        validateInput(title);
-
-        return postRepository.existsByTitle(title);
+    public boolean existsById(Long id) {
+        return postRepository.existsById(id);
     }
 
 

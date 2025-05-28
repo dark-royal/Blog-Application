@@ -9,8 +9,4 @@ import java.util.Optional;
 public interface PostRepository extends JpaRepository<PostEntity, Long> {
     Optional<PostEntity> findByTitle(String title);
 
-    boolean existsByTitle(String title);
-
-
-
 }

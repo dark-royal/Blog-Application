@@ -7,10 +7,10 @@ public interface PostPersistenceOutputPort {
 
     Post savePost(Post post);
 
-    Post getByTitle(String title) throws PostNotFoundException;
 
-    boolean existsByTitle(String title);
+    void deletePost(Post post);
 
+    Post getPostById(Long id) throws PostNotFoundException;
 
-
+    boolean existsById(Long id);
 }
