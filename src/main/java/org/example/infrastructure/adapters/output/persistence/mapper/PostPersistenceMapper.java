@@ -13,6 +13,7 @@ public interface PostPersistenceMapper {
     @Mapping(target = "title", source = "title")
     @Mapping(target = "content", source = "content")
     @Mapping(target = "publishedDate", source = "publishedDate")
+    @Mapping(target = "updatedDate", source = "updatedDate")
     @Mapping(target = "user", source = "user")
     PostEntity toEntity(Post post);
 
@@ -21,6 +22,7 @@ public interface PostPersistenceMapper {
     @Mapping(target = "title", source = "title")
     @Mapping(target = "content", source = "content")
     @Mapping(target = "publishedDate", source = "publishedDate")
+    @Mapping(target = "updatedDate", source = "updatedDate")
     @Mapping(target = "user", source = "user")
     Post toPost(PostEntity entity);
 }

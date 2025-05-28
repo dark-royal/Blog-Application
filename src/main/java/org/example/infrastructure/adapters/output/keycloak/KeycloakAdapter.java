@@ -109,12 +109,12 @@ public class KeycloakAdapter implements IdentityManagementOutputPort {
         return false;
     }
 
-    @Override
-    public void deleteUser(User user) throws UserNotFoundException {
-
-        UserRepresentation  username = findUserByUsername(user.getEmail());
-        keycloak.realm(realm).users().get(username.getId()).remove();
-    }
+//    @Override
+//    public void deleteUser(User user) throws UserNotFoundException {
+//
+//        UserRepresentation  username = findUserByUsername(user.getEmail());
+//        keycloak.realm(realm).users().get(username.getId()).remove();
+//    }
 
     @Override
     public User loginUser(User user) throws AuthenticationException {

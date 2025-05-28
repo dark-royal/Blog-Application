@@ -14,7 +14,7 @@ public interface IdentityManagementOutputPort {
     User createUser(User user) throws IdentityManagerException, UserAlreadyExistException;
     boolean doesUserExist(String email);
 
-    void deleteUser(User user) throws UserNotFoundException;
+//    void deleteUser(User user) throws UserNotFoundException;
 
     User loginUser(User user) throws AuthenticationException;
 

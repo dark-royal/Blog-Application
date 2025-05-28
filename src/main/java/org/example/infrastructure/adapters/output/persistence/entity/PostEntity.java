@@ -18,4 +18,5 @@ public class PostEntity {
     @ManyToOne
     private UserEntity user;
     private LocalDateTime publishedDate;
+    private LocalDateTime updatedDate;
 }

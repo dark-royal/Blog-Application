@@ -1,4 +1,5 @@
-package org.example.domain.models;
+package org.example.infrastructure.adapters.input.rest.data.response;
+
 
 import lombok.Getter;
 import lombok.Setter;
@@ -7,12 +8,10 @@ import java.time.LocalDateTime;
 
 @Setter
 @Getter
-public class Post {
+public class EditPostResponse {
+
     private Long id;
     private String title;
     private String content;
-    private User user;
-    private LocalDateTime publishedDate;
-    private LocalDateTime updatedDate;
-
+    private LocalDateTime editedAt;
 }

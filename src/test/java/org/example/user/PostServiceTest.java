@@ -38,6 +38,7 @@ public class PostServiceTest {
 
 
     private  User user;
+    private Post existingPost;
 
 
     @BeforeEach
@@ -47,6 +48,14 @@ public class PostServiceTest {
         user.setId(100L);
         user.setUsername("admin");
         user.setEmail("admin@example.com");
+
+        existingPost = new Post();
+        existingPost.setId(10L);
+        existingPost.setTitle("Old Title");
+        existingPost.setContent("Old Content");
+        existingPost.setUser(user);
+
+
     }
 
 
@@ -219,6 +228,82 @@ public class PostServiceTest {
 
 
 
+    @Test
+    public void testEditPost_Success() throws Exception, PostNotFoundException, UserNotFoundException {
+        Post updatedPost = new Post();
+        updatedPost.setId(existingPost.getId());
+        updatedPost.setTitle("New Title");
+        updatedPost.setContent("New Content");
+
+        when(userPersistenceOutputPort.existsById(user.getId())).thenReturn(true);
+        when(postPersistenceOutputPort.getPostById(updatedPost.getId())).thenReturn(existingPost);
+        when(postPersistenceOutputPort.savePost(any(Post.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Post result = postService.editPost(user, updatedPost);
+
+        assertNotNull(result);
+        assertEquals("New Title", result.getTitle());
+        assertEquals("New Content", result.getContent());
+        assertEquals(user, result.getUser());
+        assertNotNull(result.getUpdatedDate());
+
+        verify(userPersistenceOutputPort).existsById(user.getId());
+        verify(postPersistenceOutputPort).getPostById(updatedPost.getId());
+        verify(postPersistenceOutputPort).savePost(any(Post.class));
+    }
 
 
+    @Test
+    public void testEditPost_UserNotFound_ThrowsException() {
+        Post updatedPost = new Post();
+        updatedPost.setId(10L);
+        updatedPost.setTitle("New Title");
+        updatedPost.setContent("New Content");
+
+        when(userPersistenceOutputPort.existsById(user.getId())).thenReturn(false);
+
+        assertThrows(UserNotFoundException.class, () -> postService.editPost(user, updatedPost));
+        verify(userPersistenceOutputPort).existsById(user.getId());
+        verifyNoMoreInteractions(postPersistenceOutputPort);
+    }
+
+    @Test
+    public void testEditPost_PostNotOwnedByUser_ThrowsAccessDenied() throws PostNotFoundException {
+        Post updatedPost = new Post();
+        updatedPost.setId(existingPost.getId());
+        updatedPost.setTitle("New Title");
+        updatedPost.setContent("New Content");
+
+        User anotherUser = new User();
+        anotherUser.setId(99L);
+
+        when(userPersistenceOutputPort.existsById(anotherUser.getId())).thenReturn(true);
+        when(postPersistenceOutputPort.getPostById(updatedPost.getId())).thenReturn(existingPost);
+
+        assertThrows(AccessDeniedException.class, () -> postService.editPost(anotherUser, updatedPost));
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidInputs")
+    public void testEditPost_InvalidInput_ThrowsIllegalArgumentException(String input) {
+        Post updatedPost = new Post();
+        updatedPost.setId(10L);
+        updatedPost.setTitle(input);
+        updatedPost.setContent("Content");
+        assertThrows(IllegalArgumentException.class, () -> postService.editPost(user, updatedPost));
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("invalidInputs")
+    public void testEditPost_InvalidContent_ThrowsIllegalArgumentException(String input) {
+        Post updatedPost = new Post();
+        updatedPost.setId(10L);
+        updatedPost.setTitle("title");
+        updatedPost.setContent(input);
+        assertThrows(IllegalArgumentException.class, () -> postService.editPost(user, updatedPost));
+    }
 }
+
+
+

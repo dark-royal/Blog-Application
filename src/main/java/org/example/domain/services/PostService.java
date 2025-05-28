@@ -3,6 +3,7 @@ package org.example.domain.services;
 import lombok.RequiredArgsConstructor;
 import org.example.application.port.input.CreatePostUseCase;
 import org.example.application.port.input.DeletePostUseCase;
+import org.example.application.port.input.EditPostUseCase;
 import org.example.application.port.output.PostPersistenceOutputPort;
 import org.example.application.port.output.UserPersistenceOutputPort;
 import org.example.domain.exceptions.PostAlreadyExistsException;
@@ -20,7 +21,7 @@ import static org.example.domain.validator.InputValidator.validateInput;
 
 @Service
 @RequiredArgsConstructor
-public class PostService implements CreatePostUseCase, DeletePostUseCase{
+public class PostService implements CreatePostUseCase, DeletePostUseCase, EditPostUseCase {
 
 
     private final UserPersistenceOutputPort userPersistenceOutputPort;
@@ -61,6 +62,30 @@ public class PostService implements CreatePostUseCase, DeletePostUseCase{
         }
 
         postPersistenceOutputPort.deletePost(postFromDb);
+    }
+
+
+
+    @Override
+    public Post editPost(User user, Post updatedPost) throws UserNotFoundException, PostNotFoundException, AccessDeniedException {
+        validateInput(updatedPost.getTitle());
+        validateInput(updatedPost.getContent());
+
+        if (!userPersistenceOutputPort.existsById(user.getId())) {
+            throw new UserNotFoundException(ErrorMessages.USER_NOT_FOUND);
+        }
+
+        Post postFromDb = postPersistenceOutputPort.getPostById(updatedPost.getId());
+
+        if (!postFromDb.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("You're not allowed to edit this post");
+        }
+
+        postFromDb.setTitle(updatedPost.getTitle());
+        postFromDb.setContent(updatedPost.getContent());
+        postFromDb.setUpdatedDate(LocalDateTime.now());
+
+        return postPersistenceOutputPort.savePost(postFromDb);
     }
 
 }
