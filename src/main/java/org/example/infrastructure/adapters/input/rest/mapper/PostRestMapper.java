@@ -6,6 +6,7 @@ import org.example.infrastructure.adapters.input.rest.data.request.EditPostReque
 import org.example.infrastructure.adapters.input.rest.data.response.CreatePostResponse;
 import org.example.infrastructure.adapters.input.rest.data.response.EditPostResponse;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface PostRestMapper {
@@ -17,6 +18,7 @@ public interface PostRestMapper {
 
     Post toPost(EditPostRequest editPostRequest);
 
+    @Mapping(target = "editedAt", source = "editedAt")
     EditPostResponse toEditPostResponse(Post post);
 
 }

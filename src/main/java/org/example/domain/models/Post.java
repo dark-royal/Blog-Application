@@ -13,6 +13,7 @@ public class Post {
     private String content;
     private User user;
     private LocalDateTime publishedDate;
+    private LocalDateTime editedAt;
     private LocalDateTime updatedDate;
 
 }
