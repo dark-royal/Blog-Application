@@ -7,12 +7,10 @@ import java.time.LocalDateTime;
 
 @Setter
 @Getter
-public class CreatePostResponse {
+public class ViewPostResponse {
 
     private Long id;
     private String title;
     private String content;
-    private LocalDateTime publishedDate;
-
-
+    private LocalDateTime createdAt;
 }

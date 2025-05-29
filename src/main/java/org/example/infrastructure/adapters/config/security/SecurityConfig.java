@@ -4,6 +4,7 @@ import org.example.infrastructure.adapters.config.JwtAuthConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -25,6 +26,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/users/user", "/api/v1/users/login","/api/v1/users/new-password").permitAll() // Allow registration
+                        .requestMatchers(HttpMethod.GET, "/api/v1/posts/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

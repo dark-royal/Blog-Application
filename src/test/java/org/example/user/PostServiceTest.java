@@ -37,7 +37,7 @@ public class PostServiceTest {
     private PostPersistenceOutputPort postPersistenceOutputPort;
 
 
-    private  User user;
+    private User user;
     private Post existingPost;
 
 
@@ -126,7 +126,6 @@ public class PostServiceTest {
     }
 
 
-
     static Stream<String> invalidInputs() {
         return Stream.of(null, "", " ");
     }
@@ -134,7 +133,7 @@ public class PostServiceTest {
 
     @ParameterizedTest
     @MethodSource("invalidInputs")
-    public void testInvalidTitleThrowsException(String title){
+    public void testInvalidTitleThrowsException(String title) {
         Post post = new Post();
         post.setTitle(title);
         assertThrows(IllegalArgumentException.class, () -> postService.createPost(user, post));
@@ -142,7 +141,7 @@ public class PostServiceTest {
 
     @ParameterizedTest
     @MethodSource("invalidInputs")
-    public void testInvalidContentThrowsException(String content){
+    public void testInvalidContentThrowsException(String content) {
         Post post = new Post();
         post.setContent(content);
         assertThrows(IllegalArgumentException.class, () -> postService.createPost(user, post));
@@ -226,8 +225,6 @@ public class PostServiceTest {
     }
 
 
-
-
     @Test
     public void testEditPost_Success() throws Exception, PostNotFoundException, UserNotFoundException {
         Post updatedPost = new Post();
@@ -302,6 +299,37 @@ public class PostServiceTest {
         updatedPost.setTitle("title");
         updatedPost.setContent(input);
         assertThrows(IllegalArgumentException.class, () -> postService.editPost(user, updatedPost));
+    }
+
+
+    @Test
+    public void testViewPost_Success() throws PostNotFoundException {
+        Post post = new Post();
+        post.setId(1L);
+        post.setTitle("Sample Title");
+        post.setContent("Sample Content");
+
+        when(postPersistenceOutputPort.getPostById(1L)).thenReturn(post);
+
+        Post result = postService.viewPost(post.getId());
+
+        assertNotNull(result);
+        assertEquals("Sample Title", result.getTitle());
+        assertEquals("Sample Content", result.getContent());
+
+        verify(postPersistenceOutputPort).getPostById(1L);
+    }
+
+    @Test
+    public void testViewPost_PostNotFound_ThrowsException() throws PostNotFoundException {
+        Post post = new Post();
+        post.setId(2L);
+
+        when(postPersistenceOutputPort.getPostById(2L)).thenThrow(new PostNotFoundException("Post not found"));
+
+        assertThrows(PostNotFoundException.class, () -> postService.viewPost(post.getId()));
+
+        verify(postPersistenceOutputPort).getPostById(2L);
     }
 }
 

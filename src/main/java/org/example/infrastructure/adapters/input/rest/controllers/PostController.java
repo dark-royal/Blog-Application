@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.application.port.input.CreatePostUseCase;
 import org.example.application.port.input.DeletePostUseCase;
 import org.example.application.port.input.EditPostUseCase;
+import org.example.application.port.input.ViewPostUseCase;
 import org.example.domain.exceptions.PostAlreadyExistsException;
 import org.example.domain.exceptions.PostNotFoundException;
 import org.example.domain.exceptions.UserNotFoundException;
@@ -15,6 +16,7 @@ import org.example.infrastructure.adapters.input.rest.data.request.EditPostReque
 import org.example.infrastructure.adapters.input.rest.data.response.CreatePostResponse;
 import org.example.infrastructure.adapters.input.rest.data.response.DeletePostResponse;
 import org.example.infrastructure.adapters.input.rest.data.response.EditPostResponse;
+import org.example.infrastructure.adapters.input.rest.data.response.ViewPostResponse;
 import org.example.infrastructure.adapters.input.rest.mapper.PostRestMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +40,8 @@ public class PostController {
 
     private final PostRestMapper postRestMapper;
 
+    private final ViewPostUseCase viewPostUseCase;
+
     @PostMapping("/post")
     public ResponseEntity<CreatePostResponse> createPost(@AuthenticationPrincipal User user, @RequestBody @Valid CreatePostRequest createPostRequest) throws UserNotFoundException, PostAlreadyExistsException {
 
@@ -46,10 +50,11 @@ public class PostController {
         Post createdPost = createPostUseCase.createPost(user,post);
         createdPost.setPublishedDate(LocalDateTime.now());
 
+        CreatePostResponse response = postRestMapper.toCreatePostResponse(createdPost);
+        response.setPublishedDate(createdPost.getPublishedDate());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(postRestMapper
-                        .toCreatePostResponse(createdPost));
+                .body(response);
 
     }
 
@@ -83,6 +88,24 @@ public class PostController {
                         .toEditPostResponse(editedPost));
 
     }
+
+
+
+    @GetMapping("/{postId}")
+    public ResponseEntity<ViewPostResponse> viewPost(@PathVariable("postId")
+    Long postId) throws PostNotFoundException {
+         Post post = viewPostUseCase.viewPost(postId);
+
+        ViewPostResponse response = new ViewPostResponse();
+        response.setTitle(post.getTitle());
+        response.setContent(post.getContent());
+        response.setCreatedAt(post.getPublishedDate());
+        response.setId(post.getId());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
+
 
 
 

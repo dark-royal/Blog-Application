@@ -12,9 +12,12 @@ import org.mapstruct.Mapping;
 public interface PostRestMapper {
 
 
+
     Post toPost(CreatePostRequest createPostRequest);
 
+
     CreatePostResponse toCreatePostResponse(Post createdPost);
+
 
     Post toPost(EditPostRequest editPostRequest);
 

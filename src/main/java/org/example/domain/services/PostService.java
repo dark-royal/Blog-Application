@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.application.port.input.CreatePostUseCase;
 import org.example.application.port.input.DeletePostUseCase;
 import org.example.application.port.input.EditPostUseCase;
+import org.example.application.port.input.ViewPostUseCase;
 import org.example.application.port.output.PostPersistenceOutputPort;
 import org.example.application.port.output.UserPersistenceOutputPort;
 import org.example.domain.exceptions.PostAlreadyExistsException;
@@ -21,7 +22,7 @@ import static org.example.domain.validator.InputValidator.validateInput;
 
 @Service
 @RequiredArgsConstructor
-public class PostService implements CreatePostUseCase, DeletePostUseCase, EditPostUseCase {
+public class PostService implements CreatePostUseCase, DeletePostUseCase, EditPostUseCase, ViewPostUseCase {
 
 
     private final UserPersistenceOutputPort userPersistenceOutputPort;
@@ -88,4 +89,9 @@ public class PostService implements CreatePostUseCase, DeletePostUseCase, EditPo
         return postPersistenceOutputPort.savePost(postFromDb);
     }
 
+    @Override
+    public Post viewPost(Long  id) throws PostNotFoundException {
+        return postPersistenceOutputPort.getPostById(id);
+
+    }
 }
