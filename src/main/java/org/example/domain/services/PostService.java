@@ -1,10 +1,7 @@
 package org.example.domain.services;
 
 import lombok.RequiredArgsConstructor;
-import org.example.application.port.input.CreatePostUseCase;
-import org.example.application.port.input.DeletePostUseCase;
-import org.example.application.port.input.EditPostUseCase;
-import org.example.application.port.input.ViewPostUseCase;
+import org.example.application.port.input.*;
 import org.example.application.port.output.PostPersistenceOutputPort;
 import org.example.application.port.output.UserPersistenceOutputPort;
 import org.example.domain.exceptions.PostAlreadyExistsException;
@@ -17,12 +14,13 @@ import org.springframework.stereotype.Service;
 
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.example.domain.validator.InputValidator.validateInput;
 
 @Service
 @RequiredArgsConstructor
-public class PostService implements CreatePostUseCase, DeletePostUseCase, EditPostUseCase, ViewPostUseCase {
+public class PostService implements CreatePostUseCase, DeletePostUseCase, EditPostUseCase, ViewPostUseCase, ViewAllPostUseCase {
 
 
     private final UserPersistenceOutputPort userPersistenceOutputPort;
@@ -34,11 +32,11 @@ public class PostService implements CreatePostUseCase, DeletePostUseCase, EditPo
         validateInput(post.getTitle());
         validateInput(post.getContent());
 
-        if(!userPersistenceOutputPort.existsById(user.getId())) {
+        if (!userPersistenceOutputPort.existsById(user.getId())) {
             throw new UserNotFoundException(ErrorMessages.USER_NOT_FOUND);
         }
 
-        if(postPersistenceOutputPort.existsByTitleAndUserId(post.getTitle(), user.getId())){
+        if (postPersistenceOutputPort.existsByTitleAndUserId(post.getTitle(), user.getId())) {
             throw new PostAlreadyExistsException(ErrorMessages.POST_ALREADY_EXIST);
         }
 
@@ -66,7 +64,6 @@ public class PostService implements CreatePostUseCase, DeletePostUseCase, EditPo
     }
 
 
-
     @Override
     public Post editPost(User user, Post updatedPost) throws UserNotFoundException, PostNotFoundException, AccessDeniedException {
         validateInput(updatedPost.getTitle());
@@ -90,8 +87,23 @@ public class PostService implements CreatePostUseCase, DeletePostUseCase, EditPo
     }
 
     @Override
-    public Post viewPost(Long  id) throws PostNotFoundException {
+    public Post viewPost(Long id) throws PostNotFoundException {
         return postPersistenceOutputPort.getPostById(id);
 
+    }
+
+    @Override
+    public List<Post> getAllPostsByUserId(Long id) throws UserNotFoundException, PostNotFoundException {
+        if (!userPersistenceOutputPort.existsById(id)) {
+            throw new UserNotFoundException(ErrorMessages.USER_NOT_FOUND);
+        }
+
+        List<Post> posts = postPersistenceOutputPort.getAllPostByUserId(id);
+
+        if (posts.isEmpty()) {
+            throw new PostNotFoundException("No posts found for this user");
+        }
+
+        return posts;
     }
 }

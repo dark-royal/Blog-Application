@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -331,6 +332,45 @@ public class PostServiceTest {
 
         verify(postPersistenceOutputPort).getPostById(2L);
     }
+
+    @Test
+    void getAllPostsByUserId_shouldReturnPosts_whenUserHasPosts() throws UserNotFoundException, PostNotFoundException {
+        Long userId = 1L;
+        List<Post> mockPosts = List.of(new Post(), new Post());
+
+        when(userPersistenceOutputPort.existsById(userId)).thenReturn(true);
+        when(postPersistenceOutputPort.getAllPostByUserId(userId)).thenReturn(mockPosts);
+
+        List<Post> result = postService.getAllPostsByUserId(userId);
+
+        assertEquals(2, result.size());
+        verify(postPersistenceOutputPort).getAllPostByUserId(userId);
+    }
+
+    @Test
+    void getAllPostsByUserId_shouldThrowUserNotFoundException_whenUserDoesNotExist() {
+        Long userId = 2L;
+
+        when(userPersistenceOutputPort.existsById(userId)).thenReturn(false);
+
+        assertThrows(UserNotFoundException.class, () -> postService.getAllPostsByUserId(userId));
+    }
+
+    @Test
+    void getAllPostsByUserId_shouldThrowPostNotFoundException_whenUserHasNoPosts() {
+        Long userId = 3L;
+
+        when(userPersistenceOutputPort.existsById(userId)).thenReturn(true);
+        when(postPersistenceOutputPort.getAllPostByUserId(userId)).thenReturn(List.of());
+
+        assertThrows(PostNotFoundException.class, () -> postService.getAllPostsByUserId(userId));
+    }
+
+
+
+
+
+
 }
 
 

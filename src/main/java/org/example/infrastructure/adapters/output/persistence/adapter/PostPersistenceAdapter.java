@@ -13,6 +13,8 @@ import org.example.infrastructure.adapters.output.persistence.mapper.PostPersist
 import org.example.infrastructure.adapters.output.persistence.repositories.PostRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 import static org.example.domain.validator.InputValidator.validateInput;
 
 @Slf4j
@@ -67,5 +69,16 @@ public class PostPersistenceAdapter implements PostPersistenceOutputPort {
     public boolean existsByTitleAndUserId(String title, Long id) {
         return postRepository.existsByTitleAndUserId(title, id);
     }
+
+
+
+    @Override
+    public List<Post> getAllPostByUserId(Long id) {
+        List<PostEntity> postEntities = postRepository.findAllByUserId(id);
+        return postEntities.stream()
+                .map(postPersistenceMapper::toPost)
+                .toList();
+    }
+
 
 }

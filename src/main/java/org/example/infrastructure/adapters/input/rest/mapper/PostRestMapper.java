@@ -5,6 +5,7 @@ import org.example.infrastructure.adapters.input.rest.data.request.CreatePostReq
 import org.example.infrastructure.adapters.input.rest.data.request.EditPostRequest;
 import org.example.infrastructure.adapters.input.rest.data.response.CreatePostResponse;
 import org.example.infrastructure.adapters.input.rest.data.response.EditPostResponse;
+import org.example.infrastructure.adapters.input.rest.data.response.ViewAllUserPostResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -23,5 +24,8 @@ public interface PostRestMapper {
 
     @Mapping(target = "editedAt", source = "editedAt")
     EditPostResponse toEditPostResponse(Post post);
+
+    @Mapping(target = "publishedDate", source = "publishedDate")
+    ViewAllUserPostResponse toViewAllUserPostResponse(Post post);
 
 }

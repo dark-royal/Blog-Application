@@ -2,10 +2,7 @@ package org.example.infrastructure.adapters.input.rest.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.application.port.input.CreatePostUseCase;
-import org.example.application.port.input.DeletePostUseCase;
-import org.example.application.port.input.EditPostUseCase;
-import org.example.application.port.input.ViewPostUseCase;
+import org.example.application.port.input.*;
 import org.example.domain.exceptions.PostAlreadyExistsException;
 import org.example.domain.exceptions.PostNotFoundException;
 import org.example.domain.exceptions.UserNotFoundException;
@@ -13,10 +10,7 @@ import org.example.domain.models.Post;
 import org.example.domain.models.User;
 import org.example.infrastructure.adapters.input.rest.data.request.CreatePostRequest;
 import org.example.infrastructure.adapters.input.rest.data.request.EditPostRequest;
-import org.example.infrastructure.adapters.input.rest.data.response.CreatePostResponse;
-import org.example.infrastructure.adapters.input.rest.data.response.DeletePostResponse;
-import org.example.infrastructure.adapters.input.rest.data.response.EditPostResponse;
-import org.example.infrastructure.adapters.input.rest.data.response.ViewPostResponse;
+import org.example.infrastructure.adapters.input.rest.data.response.*;
 import org.example.infrastructure.adapters.input.rest.mapper.PostRestMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -41,6 +36,7 @@ public class PostController {
     private final PostRestMapper postRestMapper;
 
     private final ViewPostUseCase viewPostUseCase;
+    private final ViewAllPostUseCase viewAllPostUseCase;
 
     @PostMapping("/post")
     public ResponseEntity<CreatePostResponse> createPost(@AuthenticationPrincipal User user, @RequestBody @Valid CreatePostRequest createPostRequest) throws UserNotFoundException, PostAlreadyExistsException {
@@ -103,6 +99,20 @@ public class PostController {
         response.setId(post.getId());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @GetMapping("/user/{id}")
+    public ResponseEntity<List<ViewAllUserPostResponse>> viewAllUserPost(@PathVariable("id") Long id)
+            throws UserNotFoundException, PostNotFoundException {
+
+        List<Post> posts = viewAllPostUseCase.getAllPostsByUserId(id);
+
+        List<ViewAllUserPostResponse> responseList = posts.stream()
+                .map(postRestMapper::toViewAllUserPostResponse)
+                .toList();
+
+        return ResponseEntity.ok(responseList);
+    }
+
 
 
 
