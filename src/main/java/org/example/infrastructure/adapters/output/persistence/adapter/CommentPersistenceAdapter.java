@@ -11,6 +11,8 @@ import org.example.infrastructure.adapters.output.persistence.mapper.CommentPers
 import org.example.infrastructure.adapters.output.persistence.repositories.CommentRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -34,4 +36,14 @@ public class CommentPersistenceAdapter implements CommentPersistenceOutputPort {
 
         return savedPost;
     }
+
+    @Override
+    public List<Comment> getAllCommentsByPostId(Long id) {
+        List<CommentEntity> commentEntities = commentRepository.findAllByPostId(id);
+        return commentEntities
+                .stream()
+                .map(commentPersistenceMapper::toComment)
+                .toList();
+    }
+
 }

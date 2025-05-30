@@ -2,6 +2,7 @@ package org.example.domain.services;
 
 import lombok.RequiredArgsConstructor;
 import org.example.application.port.input.CommentOnPostUseCase;
+import org.example.application.port.input.ViewAllPostCommentUseCase;
 import org.example.application.port.output.CommentPersistenceOutputPort;
 import org.example.application.port.output.PostPersistenceOutputPort;
 import org.example.application.port.output.UserPersistenceOutputPort;
@@ -14,12 +15,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.example.domain.validator.InputValidator.validateInput;
 
 @Service
 @RequiredArgsConstructor
-public class CommentService implements CommentOnPostUseCase {
+public class CommentService implements CommentOnPostUseCase, ViewAllPostCommentUseCase {
 
     private final PostPersistenceOutputPort postPersistenceOutputPort;
     private final UserPersistenceOutputPort userPersistenceOutputPort;
@@ -40,4 +42,11 @@ public class CommentService implements CommentOnPostUseCase {
 
         return commentPersistenceOutputPort.saveComment(comment);
     }
+
+    @Override
+    public List<Comment> viewAllPostCommentsByPostId(Long postId) throws PostNotFoundException {
+        Post post = postPersistenceOutputPort.getPostById(postId);
+        return commentPersistenceOutputPort.getAllCommentsByPostId(post.getId());
+    }
+
 }

@@ -19,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -124,5 +125,24 @@ class CommentServiceTest {
         assertThrows(IllegalArgumentException.class,()->commentService.writeComment(comment, user, post.getId()));
 
     }
+
+    @Test
+    void viewAllPostCommentsByPostId_shouldReturnListOfComments_whenPostExists() throws PostNotFoundException {
+        Long postId = 1L;
+        Post post = new Post();
+        post.setId(postId);
+
+        List<Comment> comments = List.of(new Comment(), new Comment());
+
+        when(postPersistenceOutputPort.getPostById(postId)).thenReturn(post);
+        when(commentPersistenceOutputPort.getAllCommentsByPostId(postId)).thenReturn(comments);
+
+        List<Comment> result = commentService.viewAllPostCommentsByPostId(postId);
+
+        assertEquals(2, result.size());
+        verify(postPersistenceOutputPort).getPostById(postId);
+        verify(commentPersistenceOutputPort).getAllCommentsByPostId(postId);
+    }
+
 
 }

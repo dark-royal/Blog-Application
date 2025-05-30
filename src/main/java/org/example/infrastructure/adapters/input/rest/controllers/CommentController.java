@@ -3,32 +3,38 @@ package org.example.infrastructure.adapters.input.rest.controllers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.application.port.input.CommentOnPostUseCase;
+import org.example.application.port.input.ViewAllPostCommentUseCase;
 import org.example.domain.exceptions.PostNotFoundException;
 import org.example.domain.exceptions.UserNotFoundException;
 import org.example.domain.models.Comment;
+import org.example.domain.models.Post;
 import org.example.domain.models.User;
 import org.example.infrastructure.adapters.input.rest.data.request.CommentRequest;
 import org.example.infrastructure.adapters.input.rest.data.response.CommentResponse;
+import org.example.infrastructure.adapters.input.rest.data.response.ViewAllUserPostResponse;
 import org.example.infrastructure.adapters.input.rest.mapper.CommentRestMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/comments")
+@RequestMapping("/api/v1/comments")
 @RequiredArgsConstructor
 public class CommentController {
 
     private final CommentOnPostUseCase commentOnPostUseCase;
     private final CommentRestMapper commentRestMapper;
+    private final ViewAllPostCommentUseCase viewAllPostCommentUseCase;
 
     @PostMapping("/post/{postId}/comment")
     public ResponseEntity<CommentResponse> commentOnPost(
             @RequestBody @Valid CommentRequest commentRequest,
             @PathVariable("postId") Long postId,
             @AuthenticationPrincipal User user
-            ) throws PostNotFoundException, UserNotFoundException {
+    ) throws PostNotFoundException, UserNotFoundException {
 
         Comment comment = commentRestMapper.toComment(commentRequest);
 
@@ -37,4 +43,22 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(commentRestMapper.toCommentResponse(savedComment));
     }
+
+    @GetMapping("/posts/{postId}/comments")
+    public ResponseEntity<List<CommentResponse>> viewAllPostComments(@PathVariable("postId") Long postId) throws PostNotFoundException {
+        List<Comment> comments = viewAllPostCommentUseCase.viewAllPostCommentsByPostId(postId);
+
+        List<CommentResponse> responseList = comments.stream()
+                .map(commentRestMapper::toViewAllPostCommentResponse)
+                .toList();
+
+        return ResponseEntity.ok(responseList);
+    }
 }
+
+
+
+
+
+
+

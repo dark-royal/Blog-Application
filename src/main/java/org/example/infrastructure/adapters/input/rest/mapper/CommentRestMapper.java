@@ -12,4 +12,6 @@ public interface CommentRestMapper {
     Comment toComment(@Valid CommentRequest commentRequest);
 
     CommentResponse toCommentResponse(Comment savedComment);
+
+    CommentResponse toViewAllPostCommentResponse(Comment comment);
 }
