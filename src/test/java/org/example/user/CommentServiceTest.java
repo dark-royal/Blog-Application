@@ -3,6 +3,7 @@ package org.example.user;
 import org.example.application.port.output.CommentPersistenceOutputPort;
 import org.example.application.port.output.PostPersistenceOutputPort;
 import org.example.application.port.output.UserPersistenceOutputPort;
+import org.example.domain.exceptions.CommentNotFoundException;
 import org.example.domain.exceptions.PostNotFoundException;
 import org.example.domain.exceptions.UserNotFoundException;
 import org.example.domain.models.Comment;
@@ -143,6 +144,38 @@ class CommentServiceTest {
         verify(postPersistenceOutputPort).getPostById(postId);
         verify(commentPersistenceOutputPort).getAllCommentsByPostId(postId);
     }
+
+    @Test
+    void deleteComment_shouldDeleteComment_whenValidCommentAndPostIdProvided() throws CommentNotFoundException {
+        Long commentId = 5L;
+        Long postId = 10L;
+
+        Comment comment = new Comment();
+        comment.setId(commentId);
+        comment.setPost(post);
+
+        when(commentPersistenceOutputPort.getCommentByIdAndPostId(commentId, postId)).thenReturn(comment);
+
+        commentService.deleteComment(commentId, postId);
+
+        verify(commentPersistenceOutputPort).getCommentByIdAndPostId(commentId, postId);
+        verify(commentPersistenceOutputPort).deleteCommentById(commentId);
+    }
+
+    @Test
+    void deleteComment_shouldThrowException_whenCommentDoesNotExist() throws CommentNotFoundException {
+        Long commentId = 5L;
+        Long postId = 10L;
+
+        when(commentPersistenceOutputPort.getCommentByIdAndPostId(commentId, postId)).thenReturn(null);
+
+        assertThrows(NullPointerException.class, () -> commentService.deleteComment(commentId, postId));
+
+        verify(commentPersistenceOutputPort).getCommentByIdAndPostId(commentId, postId);
+        verify(commentPersistenceOutputPort, never()).deleteCommentById(any());
+    }
+
+
 
 
 }

@@ -24,15 +24,7 @@ public interface UserRestMapper {
 
     RegisterUserResponse toCreateUserResponse(User user);
 
-    @Mapping(source = "accessToken", target = "accessToken")
-    @Mapping(source = "expiresIn", target = "expiresIn")
-    @Mapping(source = "refreshExpiresIn", target = "refreshExpiresIn")
-    @Mapping(source = "refreshToken", target = "refreshToken")
-    @Mapping(source = "tokenType", target = "tokenType")
-    @Mapping(source = "idToken", target = "idToken")
-    @Mapping(source = "scope", target = "scope")
     LoginUserResponse toLoginUserResponse(User authenticatedUser);
-
 
 
     User toUser(LoginUserRequest loginUserRequest);

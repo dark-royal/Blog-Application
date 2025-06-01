@@ -3,8 +3,10 @@ package org.example.infrastructure.adapters.output.persistence.adapter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.application.port.output.CommentPersistenceOutputPort;
+import org.example.domain.exceptions.CommentNotFoundException;
 import org.example.domain.models.Comment;
 import org.example.domain.models.Post;
+import org.example.infrastructure.adapters.input.rest.messages.ErrorMessages;
 import org.example.infrastructure.adapters.output.persistence.entity.CommentEntity;
 import org.example.infrastructure.adapters.output.persistence.entity.PostEntity;
 import org.example.infrastructure.adapters.output.persistence.mapper.CommentPersistenceMapper;
@@ -44,6 +46,20 @@ public class CommentPersistenceAdapter implements CommentPersistenceOutputPort {
                 .stream()
                 .map(commentPersistenceMapper::toComment)
                 .toList();
+    }
+
+    @Override
+    public void deleteCommentById(Long id) {
+        commentRepository.deleteById(id);
+    }
+
+    @Override
+    public Comment getCommentByIdAndPostId(Long postId,Long commentId) throws CommentNotFoundException {
+        CommentEntity commentEntity = commentRepository.findByPostIdAndId(postId,commentId);
+        if (commentEntity == null) {
+            throw  new CommentNotFoundException(ErrorMessages.COMMENT_NOT_FOUND);
+        }
+        return commentPersistenceMapper.toComment(commentEntity);
     }
 
 }

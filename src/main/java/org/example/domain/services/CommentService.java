@@ -2,10 +2,12 @@ package org.example.domain.services;
 
 import lombok.RequiredArgsConstructor;
 import org.example.application.port.input.CommentOnPostUseCase;
+import org.example.application.port.input.DeleteCommentUseCase;
 import org.example.application.port.input.ViewAllPostCommentUseCase;
 import org.example.application.port.output.CommentPersistenceOutputPort;
 import org.example.application.port.output.PostPersistenceOutputPort;
 import org.example.application.port.output.UserPersistenceOutputPort;
+import org.example.domain.exceptions.CommentNotFoundException;
 import org.example.domain.exceptions.PostNotFoundException;
 import org.example.domain.exceptions.UserNotFoundException;
 import org.example.domain.models.Comment;
@@ -21,7 +23,7 @@ import static org.example.domain.validator.InputValidator.validateInput;
 
 @Service
 @RequiredArgsConstructor
-public class CommentService implements CommentOnPostUseCase, ViewAllPostCommentUseCase {
+public class CommentService implements CommentOnPostUseCase, ViewAllPostCommentUseCase, DeleteCommentUseCase {
 
     private final PostPersistenceOutputPort postPersistenceOutputPort;
     private final UserPersistenceOutputPort userPersistenceOutputPort;
@@ -47,6 +49,13 @@ public class CommentService implements CommentOnPostUseCase, ViewAllPostCommentU
     public List<Comment> viewAllPostCommentsByPostId(Long postId) throws PostNotFoundException {
         Post post = postPersistenceOutputPort.getPostById(postId);
         return commentPersistenceOutputPort.getAllCommentsByPostId(post.getId());
+    }
+
+
+    @Override
+    public void deleteComment(Long commentId, Long postId) throws CommentNotFoundException {
+        Comment comment = commentPersistenceOutputPort.getCommentByIdAndPostId(commentId, postId);
+        commentPersistenceOutputPort.deleteCommentById(comment.getId());
     }
 
 }

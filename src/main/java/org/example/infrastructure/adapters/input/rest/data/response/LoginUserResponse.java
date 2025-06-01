@@ -25,16 +25,8 @@ public class LoginUserResponse {
     protected String refreshToken;
     @JsonProperty("token_type")
     protected String tokenType;
-    @JsonProperty("id_token")
-    protected String idToken;
-    @JsonProperty("not-before-policy")
-    protected int notBeforePolicy;
-    @JsonProperty("session_state")
-    protected String sessionState;
-    protected Map<String, Object> otherClaims = new HashMap();
     @JsonProperty("scope")
     protected String scope;
-    @JsonProperty("error")
-    protected String error;
+
 
 }

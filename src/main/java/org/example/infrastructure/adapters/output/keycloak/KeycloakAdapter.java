@@ -1,5 +1,6 @@
 package org.example.infrastructure.adapters.output.keycloak;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.common.util.StringUtils;
@@ -31,9 +32,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -126,6 +125,11 @@ public class KeycloakAdapter implements IdentityManagementOutputPort {
 
             user.setAccessToken(loginUserResponse.getAccessToken());
             user.setRefreshToken(loginUserResponse.getRefreshToken());
+            user.setScope(loginUserResponse.getScope());
+            user.setExpiresIn(loginUserResponse.getExpiresIn());
+            user.setRefreshExpiresIn(loginUserResponse.getRefreshExpiresIn());
+            user.setTokenType(loginUserResponse.getTokenType());
+
 
             return user;
 
