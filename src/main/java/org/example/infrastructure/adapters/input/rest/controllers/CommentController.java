@@ -1,5 +1,12 @@
 package org.example.infrastructure.adapters.input.rest.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.application.port.input.CommentOnPostUseCase;
@@ -29,6 +36,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/comments")
 @RequiredArgsConstructor
+@Tag(name = "Comments", description = "Operations related to commenting on posts")
 public class CommentController {
 
     private final CommentOnPostUseCase commentOnPostUseCase;
@@ -36,42 +44,60 @@ public class CommentController {
     private final ViewAllPostCommentUseCase viewAllPostCommentUseCase;
     private final DeleteCommentUseCase deleteCommentUseCase;
 
+    @Operation(summary = "Add a comment to a post", description = "Creates a comment on a specific post")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Comment added", content = @Content(schema = @Schema(implementation = CommentResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Post or user not found")
+    })
+    @SecurityRequirement(name = "Keycloak")
     @PostMapping("/post/{postId}/comment")
     public ResponseEntity<CommentResponse> commentOnPost(
-            @RequestBody @Valid CommentRequest commentRequest,
-            @PathVariable("postId") Long postId,
+            @Valid @RequestBody CommentRequest commentRequest,
+            @PathVariable Long postId,
             @AuthenticationPrincipal User user
     ) throws PostNotFoundException, UserNotFoundException {
-
         Comment comment = commentRestMapper.toComment(commentRequest);
-
         Comment savedComment = commentOnPostUseCase.writeComment(comment, user, postId);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(commentRestMapper.toCommentResponse(savedComment));
+        return ResponseEntity.status(HttpStatus.CREATED).body(commentRestMapper.toCommentResponse(savedComment));
     }
 
+    @Operation(summary = "View all comments on a post", description = "Retrieves all comments for a specific post")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Comments retrieved", content = @Content(schema = @Schema(implementation = CommentResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Post not found")
+    })
     @GetMapping("/posts/{postId}/comments")
-    public ResponseEntity<List<CommentResponse>> viewAllPostComments(@PathVariable("postId") Long postId) throws PostNotFoundException {
+    public ResponseEntity<List<CommentResponse>> viewAllPostComments(@PathVariable Long postId)
+            throws PostNotFoundException {
         List<Comment> comments = viewAllPostCommentUseCase.viewAllPostCommentsByPostId(postId);
-
         List<CommentResponse> responseList = comments.stream()
                 .map(commentRestMapper::toViewAllPostCommentResponse)
                 .toList();
-
         return ResponseEntity.ok(responseList);
     }
 
-    @DeleteMapping("")
-    public ResponseEntity<DeleteCommentResponse> deleteComment(@RequestParam(name = "commentId")Long commentId, @RequestParam(name = "postId")
-    Long postId) throws CommentNotFoundException {
-        deleteCommentUseCase.deleteComment(postId,commentId);
+    @Operation(summary = "Delete a comment", description = "Deletes a comment from a post")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Comment deleted", content = @Content(schema = @Schema(implementation = DeleteCommentResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Comment not found")
+    })
+    @SecurityRequirement(name = "Keycloak")
+    @DeleteMapping
+    public ResponseEntity<DeleteCommentResponse> deleteComment(@RequestParam Long commentId,
+                                                               @RequestParam Long postId)
+            throws CommentNotFoundException {
+        deleteCommentUseCase.deleteComment(postId, commentId);
+
         DeleteCommentResponse response = new DeleteCommentResponse();
-        response.setMessage("Successfully deleted post");
+        response.setMessage("Successfully deleted comment");
         response.setDateDeleted(LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+
+        return ResponseEntity.ok(response);
     }
 }
+
+
 
 
 

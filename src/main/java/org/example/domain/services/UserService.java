@@ -41,9 +41,12 @@ public class UserService implements SignUpUseCase, LoginUseCase, LogoutUseCase {
         validateInput(user.getLastName());
         validateInput(user.getPassword());
         validateInput(user.getRole());
+
         if (userPersistenceOutputPort.userExistsByEmail(user.getEmail())) {
             throw new UserAlreadyExistException(ErrorMessages.USER_EXISTS_ALREADY);
         }
+        String encodedPassword = passwordEncoder.encode(user.getPassword());
+        user.setPassword(encodedPassword);
 
         user = identityManagementOutputPort.createUser(user);
         log.info("Created new user: {}", user);
@@ -59,15 +62,14 @@ public class UserService implements SignUpUseCase, LoginUseCase, LogoutUseCase {
         validateInput(user.getEmail());
         validateInput(user.getPassword());
 
-        identityManagementOutputPort.loginUser(user);
-
-
         User foundUser = userPersistenceOutputPort.getUserByEmail(user.getEmail());
         if (foundUser == null) {
             throw new UserNotFoundException(ErrorMessages.USER_NOT_FOUND);
         }
 
-        if (!(user.getPassword().equals(foundUser.getPassword()))) {
+        log.info("found user password {}", foundUser.getPassword());
+
+        if (!passwordEncoder.matches(user.getPassword(), foundUser.getPassword())) {
             throw new InvalidCredentialsException("Invalid login credentials");
         }
 
@@ -75,41 +77,13 @@ public class UserService implements SignUpUseCase, LoginUseCase, LogoutUseCase {
             throw new IllegalStateException("Account is not enabled");
         }
 
-        log.info("User with email {} has logged in successfully", user.getEmail());
+        log.info("found user enabled {}", foundUser);
 
+        identityManagementOutputPort.loginUser(foundUser);
+
+        log.info("User with email {} has logged in successfully", user.getEmail());
         return foundUser;
     }
-
-
-//    @Override
-//    public User resetPassword(User user)
-//            throws UserNotFoundException, AuthenticationException {
-//
-//        validateInput(user.getEmail());
-//        validateInput(user.getPassword());
-//        validateInput(user.getNewPassword());
-//
-//        User existingUser = userPersistenceOutputPort.getUserByEmail(user.getEmail());
-//
-//        if (!passwordEncoder.matches(existingUser.getPassword(), existingUser.getPassword())) {
-//            throw new AuthenticationException("Old password is incorrect");
-//        }
-//
-//        if (existingUser.getNewPassword().equals(existingUser.getPassword())) {
-//            throw new AuthenticationException("New password must be different from old password");
-//        }
-//
-//        try {
-//            User updatedUser = identityManagementOutputPort.resetPassword(existingUser);
-//
-//            existingUser.setPassword(passwordEncoder.encode(existingUser.getNewPassword()));
-//            userPersistenceOutputPort.saveUser(existingUser);
-//
-//            return updatedUser;
-//        } catch (Exception e) {
-//            throw new AuthenticationException("Failed to reset password: " + e.getMessage());
-//        }
-//    }
 
 
     @Override

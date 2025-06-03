@@ -1,9 +1,16 @@
 package org.example.infrastructure.adapters.input.rest.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.example.application.port.input.LoginUseCase;
 import org.example.application.port.input.LogoutUseCase;
 import org.example.application.port.input.SignUpUseCase;
@@ -24,23 +31,30 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/v1/users")
+@Tag(name = "Users", description = "Operations related to user authentication and management")
 public class UserIdentityController {
 
     private final SignUpUseCase signUpUseCase;
     private final LoginUseCase loginUseCase;
     private final UserRestMapper userRestMapper;
     private final LogoutUseCase logoutUseCase;
-    private final PasswordEncoder passwordEncoder;
 
+    @Operation(summary = "Register a new user", description = "Creates a new user account")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "User registered successfully", content = @Content(schema = @Schema(implementation = RegisterUserResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid user data"),
+            @ApiResponse(responseCode = "409", description = "User already exists"),
+            @ApiResponse(responseCode = "409", description = "fields are  empty"),
+    })
     @PostMapping("/user")
     public ResponseEntity<RegisterUserResponse> registerUser(
-            @RequestBody @Valid RegisterUserRequest registerRequest) throws UserNotFoundException, UserAlreadyExistException, IdentityManagerException {
+            @RequestBody @Valid @Parameter(description = "User registration details") RegisterUserRequest registerRequest)
+            throws UserNotFoundException, UserAlreadyExistException, IdentityManagerException {
 
         log.info("Registration request for email: {}", registerRequest.getEmail());
 
         User user = userRestMapper.toUser(registerRequest);
         user.setPassword(registerRequest.getPassword());
-
         User registeredUser = signUpUseCase.signUp(user);
 
         return ResponseEntity
@@ -48,46 +62,50 @@ public class UserIdentityController {
                 .body(userRestMapper.toCreateUserResponse(registeredUser));
     }
 
+    @Operation(summary = "User login", description = "Authenticates a user and returns a JWT token")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "User authenticated successfully", content = @Content(schema = @Schema(implementation = LoginUserResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request data"),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+    })
     @PostMapping("/login")
-    @Operation(summary = "User Login", description = "Authenticates the user and returns login response")
-    public ResponseEntity<LoginUserResponse> login(@RequestBody @Valid LoginUserRequest loginUserRequest) throws UserNotFoundException, InvalidCredentialsException, AuthenticationException {
+    public ResponseEntity<LoginUserResponse> login(
+            @RequestBody @Valid @Parameter(description = "User login credentials") LoginUserRequest loginUserRequest)
+            throws UserNotFoundException, InvalidCredentialsException, AuthenticationException {
 
         log.info("Login request received for email: {}", loginUserRequest.getEmail());
 
-        User userIdentity = userRestMapper.toUser(loginUserRequest);
-        log.info("Mapped user identity access token: {}", userIdentity.getAccessToken());
+        User user = userRestMapper.toUser(loginUserRequest);
+        User authenticatedUser = loginUseCase.login(user);
+        LoginUserResponse response = userRestMapper.toLoginUserResponse(authenticatedUser);
 
-        User authenticatedUser = loginUseCase.login(userIdentity);
-        log.info("Authenticated user: {}", authenticatedUser.getEmail());
+        log.info("Successful login for email: {}", authenticatedUser.getEmail());
 
-        LoginUserResponse response = userRestMapper
-                .toLoginUserResponse(userIdentity);
-
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(response);
+        return ResponseEntity.ok(response);
     }
 
-
-
-    @PostMapping("/logout")
-    public ResponseEntity<Void> logout(
-            @RequestHeader("Authorization") String authHeader)
-            throws IdentityManagerException {
-
-        String token = authHeader.replace("Bearer ", "").trim();
-        log.info("Logout request received for token: {}", token);
-
-        User user = new User();
-        user.setRefreshToken(token);
-
-        logoutUseCase.logout(user);
-
-        return ResponseEntity.noContent()
-                .header(HttpHeaders.CACHE_CONTROL, "no-store")
-                .build();
-    }
-
-
+//    @Operation(summary = "User logout", description = "Logs out a user by invalidating the refresh token")
+//    @ApiResponses({
+//            @ApiResponse(responseCode = "201", description = "User logged out successfully"),
+//            @ApiResponse(responseCode = "401", description = "Invalid token"),
+//    })
+//
+//    @SecurityRequirement(name = "Keycloak")
+//    @PostMapping("/logout")
+//    public ResponseEntity<Void> logout(
+//            @RequestHeader("Authorization") @Parameter(description = "JWT token (Bearer)") String authHeader)
+//            throws IdentityManagerException {
+//
+//        String token = authHeader.replace("Bearer ", "").trim();
+//        log.info("Logout request received for token: {}", token);
+//
+//        User user = new User();
+//        user.setRefreshToken(token);
+//        logoutUseCase.logout(user);
+//
+//        return ResponseEntity.noContent()
+//                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+//                .build();
+//    }
 }
-

@@ -18,6 +18,6 @@ spring:
           issuer-uri: http://localhost:9082/realms/UserIdentity
           jwk-set-uri: http://localhost:9082/realms/UserIdentity/protocol/openid-connect/certs
 server:
-  port: 8082
+  port: 8083
 keycloak:
   principal-attribute: preferred_username
