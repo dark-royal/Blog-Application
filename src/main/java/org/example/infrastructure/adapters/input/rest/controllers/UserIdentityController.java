@@ -5,25 +5,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.example.application.port.input.LoginUseCase;
-import org.example.application.port.input.ResetPasswordUseCase;
+import org.example.application.port.input.LogoutUseCase;
 import org.example.application.port.input.SignUpUseCase;
 import org.example.domain.exceptions.*;
 import org.example.domain.models.User;
 import org.example.infrastructure.adapters.input.rest.data.request.LoginUserRequest;
 import org.example.infrastructure.adapters.input.rest.data.request.RegisterUserRequest;
-import org.example.infrastructure.adapters.input.rest.data.request.ResetPasswordRequest;
 import org.example.infrastructure.adapters.input.rest.data.response.LoginUserResponse;
 import org.example.infrastructure.adapters.input.rest.data.response.RegisterUserResponse;
-import org.example.infrastructure.adapters.input.rest.data.response.ResetPasswordResponse;
 import org.example.infrastructure.adapters.input.rest.mapper.UserRestMapper;
-import org.example.infrastructure.adapters.output.mapper.UserMapper;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,7 +29,7 @@ public class UserIdentityController {
     private final SignUpUseCase signUpUseCase;
     private final LoginUseCase loginUseCase;
     private final UserRestMapper userRestMapper;
-    private final ResetPasswordUseCase resetPasswordUseCase;
+    private final LogoutUseCase logoutUseCase;
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/user")
@@ -74,20 +69,24 @@ public class UserIdentityController {
     }
 
 
-    @PostMapping("/new-password")
-    public ResponseEntity<ResetPasswordResponse> resetPassword(@RequestBody @Valid ResetPasswordRequest request) throws UserNotFoundException, AuthenticationException {
 
-        User user = userRestMapper.toUser(request);
-        user.setPassword(request.getNewPassword());
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @RequestHeader("Authorization") String authHeader)
+            throws IdentityManagerException {
 
-        User resetPassword = resetPasswordUseCase.resetPassword(user);
+        String token = authHeader.replace("Bearer ", "").trim();
+        log.info("Logout request received for token: {}", token);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(userRestMapper.toResetPasswordResponse(resetPassword));
+        User user = new User();
+        user.setRefreshToken(token);
+
+        logoutUseCase.logout(user);
+
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .build();
     }
-
-
 
 
 }

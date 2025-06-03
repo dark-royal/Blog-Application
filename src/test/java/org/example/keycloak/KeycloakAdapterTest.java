@@ -16,8 +16,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -107,90 +106,40 @@ public class KeycloakAdapterTest {
         assertThrows(AuthenticationException.class, () -> identityManagementOutputPort.loginUser(user));
     }
 
-    @Test
-    public void testThatUserCanResetPassword() throws Exception, UserNotFoundException, AuthenticationException, UserAlreadyExistException {
 
-        user = new User();
-        user.setId(300L);
-        user.setUsername("precious");
-        user.setPassword("password");
-        user.setEmail("precy@gmail.com");
-        user.setFirstName("lope");
-        user.setLastName("kemi");
-        user.setRole("user");
-
-        identityManagementOutputPort.createUser(user);
-
-        User resetRequest = new User();
-        resetRequest.setEmail(user.getEmail());
-        resetRequest.setPassword("newSecurePassword123!");
-
-        User result = identityManagementOutputPort.resetPassword(resetRequest);
-
-        assertNotNull(result);
-
-    }
 
     @Test
-    public void testThatUserCanResetPassword_andCanLoginWithIt() throws Exception, UserNotFoundException, AuthenticationException, UserAlreadyExistException {
-
+    public void testThatUserCanLogout() throws Exception, UserAlreadyExistException, AuthenticationException, IdentityManagerException {
         user = new User();
-        user.setId(300L);
-        user.setUsername("chichi");
+        user.setId(400L);
+        user.setUsername("tunde");
         user.setPassword("password");
-        user.setEmail("chichi@gmail.com");
-        user.setFirstName("lope");
-        user.setLastName("kemi");
+        user.setEmail("tunde@gmail.com");
+        user.setFirstName("tunde");
+        user.setLastName("ade");
         user.setRole("user");
-
         identityManagementOutputPort.createUser(user);
-
-        User resetRequest = new User();
-        resetRequest.setEmail(user.getEmail());
-        resetRequest.setPassword("newSecurePassword123!");
-
-        User result = identityManagementOutputPort.resetPassword(resetRequest);
-
-        assertNotNull(result);
 
         User loginAttempt = new User();
         loginAttempt.setEmail(user.getEmail());
-        loginAttempt.setPassword("newSecurePassword123!");
-        User loggedInUser = identityManagementOutputPort.loginUser(loginAttempt);
+        loginAttempt.setPassword("password");
+        identityManagementOutputPort.loginUser(loginAttempt);
 
-        assertNotNull(loggedInUser.getAccessToken());
+        assertNotNull(loginAttempt.getRefreshToken(), "Refresh token should not be null after login");
 
+        keycloakAdapter.logoutUser(loginAttempt);
 
+        assertNull(loginAttempt.getAccessToken(), "Access token should be null after logout");
+        assertNull(loginAttempt.getRefreshToken(), "Refresh token should be null after logout");
+        assertNull(loginAttempt.getScope(), "Scope should be null after logout");
+        assertNull(loginAttempt.getTokenType(), "Token type should be null after logout");
     }
 
     @Test
-    public void testThatUserCanResetPassword_LoginWithOldPassword_ThrowException() throws Exception, UserNotFoundException, AuthenticationException, UserAlreadyExistException {
-
-        user = new User();
-        user.setId(300L);
-        user.setUsername("ned");
-        user.setPassword("password");
-        user.setEmail("ned@gmail.com");
-        user.setFirstName("lope");
-        user.setLastName("kemi");
-        user.setRole("user");
-
-        identityManagementOutputPort.createUser(user);
-
-        User resetRequest = new User();
-        resetRequest.setEmail(user.getEmail());
-        resetRequest.setPassword("newSecurePassword123!");
-
-        User result = identityManagementOutputPort.resetPassword(resetRequest);
-
-        assertNotNull(result);
-
-        User loginAttempt = new User();
-        loginAttempt.setEmail(user.getEmail());
-        loginAttempt.setPassword("Password123!");
-        assertThrows(AuthenticationException.class,()->identityManagementOutputPort.loginUser(loginAttempt));
-
-
+    public void testThatLogoutWithInvalidRefreshToken_ThrowsIdentityManagerException() {
+        User invalidUser = new User();
+        invalidUser.setRefreshToken("this-is-an-invalid-token");
+        assertThrows(IdentityManagerException.class, () -> keycloakAdapter.logoutUser(invalidUser));
     }
 
 }

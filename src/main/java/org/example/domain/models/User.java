@@ -13,6 +13,7 @@ public class User {
     private Long id;
     private String username;
     private String email;
+    private String newPassword;
     private UserRepresentation userRepresentation;
     @JsonProperty("access_token")
     protected String accessToken;

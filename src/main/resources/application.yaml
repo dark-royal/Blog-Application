@@ -7,6 +7,7 @@ app:
     realm: UserIdentity
     serverUrl: http://localhost:9082
     tokenUrl: http://localhost:9082/realms/UserIdentity/protocol/openid-connect/token
+    logoutUrl: http://localhost:9082/realms/UserIdentity/protocol/openid-connect/logout
 
 
 spring:

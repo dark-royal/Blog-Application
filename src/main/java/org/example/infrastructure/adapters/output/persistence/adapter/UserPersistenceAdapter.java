@@ -59,7 +59,7 @@ public class UserPersistenceAdapter implements UserPersistenceOutputPort {
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> {
                     log.error("User not found for email: {}", email);
-                    return new UserNotFoundException("User not found");
+                    return new UserNotFoundException(ErrorMessages.USER_NOT_FOUND);
                 });
         log.info("Found user: {}", user.getId());
         return userPersistenceMapper.toModel(user);

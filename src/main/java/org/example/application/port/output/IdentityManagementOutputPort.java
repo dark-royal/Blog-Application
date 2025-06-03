@@ -18,7 +18,9 @@ public interface IdentityManagementOutputPort {
 
     User loginUser(User user) throws AuthenticationException;
 
-    User resetPassword(User user) throws AuthenticationException, UserNotFoundException;
+//    User resetPassword(User user) throws AuthenticationException, UserNotFoundException;
 
     Optional<User> getUserByEmail(String email) throws UserNotFoundException;
+
+    void logoutUser(User user) throws IdentityManagerException;
 }

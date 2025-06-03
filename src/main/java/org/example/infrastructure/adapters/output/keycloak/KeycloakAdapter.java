@@ -1,6 +1,5 @@
 package org.example.infrastructure.adapters.output.keycloak;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.common.util.StringUtils;
@@ -56,6 +55,9 @@ public class KeycloakAdapter implements IdentityManagementOutputPort {
 
     @Value("${app.keycloak.admin.clientSecret}")
     private String clientSecret;
+
+    @Value("${app.keycloak.logoutUrl}")
+    private String logoutUrl;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -143,21 +145,21 @@ public class KeycloakAdapter implements IdentityManagementOutputPort {
         }
     }
 
-    @Override
-    public User resetPassword(User user) throws AuthenticationException {
-        try {
-            UserRepresentation foundUser = findUserByUsername(user.getEmail());
-            CredentialRepresentation credential = createPasswordCredentials(user.getPassword());
-
-            getUserById(foundUser.getId()).resetPassword(credential);
-
-            return user;
-        } catch (UserNotFoundException e) {
-            throw new AuthenticationException("User not found");
-        } catch (Exception e) {
-            throw new AuthenticationException("Password reset failed");
-        }
-    }
+//    @Override
+//    public User resetPassword(User user) throws AuthenticationException {
+//        try {
+//            UserRepresentation foundUser = findUserByUsername(user.getEmail());
+//            CredentialRepresentation credential = createPasswordCredentials(user.getPassword());
+//
+//            getUserById(foundUser.getId()).resetPassword(credential);
+//
+//            return user;
+//        } catch (UserNotFoundException e) {
+//            throw new AuthenticationException("User not found");
+//        } catch (Exception e) {
+//            throw new AuthenticationException("Password reset failed");
+//        }
+//    }
 
 
     @Override
@@ -263,5 +265,39 @@ public class KeycloakAdapter implements IdentityManagementOutputPort {
 
 
 
+    @Override
+    public void logoutUser(User user) throws IdentityManagerException {
+        log.info("Attempting logout with refresh token: {}", user.getRefreshToken());
+        log.info("Keycloak URL: {}", logoutUrl);
 
+        if (user.getRefreshToken() == null) {
+            throw new IdentityManagerException("Refresh token is missing");
+        }
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("client_id", clientId);
+        params.add("client_secret", clientSecret);
+        params.add("refresh_token", user.getRefreshToken());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        try {
+            log.info("Sending logout request to Keycloak: {}", params);
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    logoutUrl,
+                    new HttpEntity<>(params, headers),
+                    String.class
+            );
+            log.info("Keycloak logout response: {}", response.getStatusCode());
+
+            user.setAccessToken(null);
+            user.setRefreshToken(null);
+            user.setScope(null);
+            user.setTokenType(null);
+        } catch (Exception e) {
+            log.error("Keycloak logout failed: {}", e.getMessage());
+            throw new IdentityManagerException("Logout failed: " + e.getMessage());
+        }
+    }
 }

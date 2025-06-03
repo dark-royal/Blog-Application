@@ -2,10 +2,7 @@ package org.example.user;
 
 import org.example.application.port.output.IdentityManagementOutputPort;
 import org.example.application.port.output.UserPersistenceOutputPort;
-import org.example.domain.exceptions.AuthenticationException;
-import org.example.domain.exceptions.InvalidCredentialsException;
-import org.example.domain.exceptions.UserAlreadyExistException;
-import org.example.domain.exceptions.UserNotFoundException;
+import org.example.domain.exceptions.*;
 import org.example.domain.models.User;
 import org.example.domain.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,11 +85,11 @@ public class UserServiceTest {
     public void testInvalidEmail_EmptyAndBlankEmail_ThrowIllegalArgumentException(String input) throws Exception {
 
         User user = new User();
-        user.setEmail("");
-        user.setPassword("admin");
-        user.setFirstName("admin");
-        user.setLastName("admin");
-        user.setRole("user");
+        user.setEmail(input);
+        user.setPassword(input);
+        user.setFirstName(input);
+        user.setLastName(input);
+        user.setRole(input);
 
         assertThrows(IllegalArgumentException.class, () -> userService.signUp(user));
     }
@@ -176,48 +173,46 @@ public class UserServiceTest {
 
 
     @Test
-    void resetPassword_Success() throws Exception, UserNotFoundException, AuthenticationException {
+    void logout_Success() throws IdentityManagerException {
         User user = new User();
-        user.setEmail("test@example.com");
-        user.setPassword("newPassword123");
+        user.setRefreshToken("valid-refresh-token");
 
-        User existingUser = new User();
-        existingUser.setEmail(user.getEmail());
+        doNothing().when(identityManagementOutputPort).logoutUser(user);
 
-        when(userPersistenceOutputPort.getUserByEmail(user.getEmail())).thenReturn(existingUser);
-        when(identityManagementOutputPort.resetPassword(user)).thenReturn(user);
-
-        User result = userService.resetPassword(user);
-
-        assertThat(result).isEqualTo(user);
-        verify(identityManagementOutputPort).resetPassword(user);
-
+        assertDoesNotThrow(() -> userService.logout(user));
+        verify(identityManagementOutputPort, times(1)).logoutUser(user);
     }
 
     @Test
-    void resetPassword_UserNotFound() throws UserNotFoundException {
+    void logout_NullRefreshToken_ThrowsException() throws IdentityManagerException {
+
         User user = new User();
-        user.setEmail("nonexistent@example.com");
-        user.setPassword("newPassword123");
+        user.setRefreshToken(null);
 
-        when(userPersistenceOutputPort.getUserByEmail(user.getEmail())).thenReturn(null);
-
-       assertThrows(UserNotFoundException.class, () -> userService.resetPassword(user));
+        assertThrows(IllegalArgumentException.class, () -> userService.logout(user));
+        verify(identityManagementOutputPort, never()).logoutUser(any());
     }
 
-
-
-    @ParameterizedTest
-    @MethodSource("invalidInputs")
-    void resetPassword_InvalidPassword(String input) throws Exception {
+    @Test
+    void logout_EmptyRefreshToken_ThrowsException() throws IdentityManagerException {
         User user = new User();
-        user.setEmail("test@example.com");
-        user.setPassword(input);
-        assertThrows(IllegalArgumentException.class, () -> userService.resetPassword(user));
+        user.setRefreshToken("");
 
-
+        assertThrows(IllegalArgumentException.class, () -> userService.logout(user));
+        verify(identityManagementOutputPort, never()).logoutUser(any());
     }
 
+    @Test
+    void logout_KeycloakFailure_ThrowsException() throws IdentityManagerException {
+        User user = new User();
+        user.setRefreshToken("valid-token");
+
+        doThrow(new IdentityManagerException("Keycloak error"))
+                .when(identityManagementOutputPort).logoutUser(user);
+
+        assertThrows(IdentityManagerException.class, () -> userService.logout(user));
+        verify(identityManagementOutputPort, times(1)).logoutUser(user);
+    }
 
 
 

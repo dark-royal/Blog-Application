@@ -2,7 +2,7 @@ package org.example.domain.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.application.port.input.LoginUseCase;
-import org.example.application.port.input.ResetPasswordUseCase;
+import org.example.application.port.input.LogoutUseCase;
 import org.example.application.port.input.SignUpUseCase;
 import org.example.application.port.output.IdentityManagementOutputPort;
 import org.example.application.port.output.UserPersistenceOutputPort;
@@ -18,7 +18,7 @@ import static org.example.domain.validator.InputValidator.validateInput;
 
 @Slf4j
 @Service
-public class UserService implements SignUpUseCase, LoginUseCase, ResetPasswordUseCase {
+public class UserService implements SignUpUseCase, LoginUseCase, LogoutUseCase {
 
     @Autowired
     private UserPersistenceOutputPort userPersistenceOutputPort;
@@ -36,6 +36,11 @@ public class UserService implements SignUpUseCase, LoginUseCase, ResetPasswordUs
     @Override
     public User signUp(User user) throws UserAlreadyExistException, IdentityManagerException {
         validateInput(user.getEmail());
+        validateInput(user.getUsername());
+        validateInput(user.getFirstName());
+        validateInput(user.getLastName());
+        validateInput(user.getPassword());
+        validateInput(user.getRole());
         if (userPersistenceOutputPort.userExistsByEmail(user.getEmail())) {
             throw new UserAlreadyExistException(ErrorMessages.USER_EXISTS_ALREADY);
         }
@@ -52,6 +57,7 @@ public class UserService implements SignUpUseCase, LoginUseCase, ResetPasswordUs
     @Override
     public User login(User user) throws UserNotFoundException, InvalidCredentialsException, AuthenticationException {
         validateInput(user.getEmail());
+        validateInput(user.getPassword());
 
         identityManagementOutputPort.loginUser(user);
 
@@ -75,27 +81,48 @@ public class UserService implements SignUpUseCase, LoginUseCase, ResetPasswordUs
     }
 
 
+//    @Override
+//    public User resetPassword(User user)
+//            throws UserNotFoundException, AuthenticationException {
+//
+//        validateInput(user.getEmail());
+//        validateInput(user.getPassword());
+//        validateInput(user.getNewPassword());
+//
+//        User existingUser = userPersistenceOutputPort.getUserByEmail(user.getEmail());
+//
+//        if (!passwordEncoder.matches(existingUser.getPassword(), existingUser.getPassword())) {
+//            throw new AuthenticationException("Old password is incorrect");
+//        }
+//
+//        if (existingUser.getNewPassword().equals(existingUser.getPassword())) {
+//            throw new AuthenticationException("New password must be different from old password");
+//        }
+//
+//        try {
+//            User updatedUser = identityManagementOutputPort.resetPassword(existingUser);
+//
+//            existingUser.setPassword(passwordEncoder.encode(existingUser.getNewPassword()));
+//            userPersistenceOutputPort.saveUser(existingUser);
+//
+//            return updatedUser;
+//        } catch (Exception e) {
+//            throw new AuthenticationException("Failed to reset password: " + e.getMessage());
+//        }
+//    }
+
+
     @Override
-    public User resetPassword(User user) throws AuthenticationException, UserNotFoundException {
-
-        validateInput(user.getEmail());
-        validateInput(user.getPassword());
-
-        User existingUser = userPersistenceOutputPort.getUserByEmail(user.getEmail());
-        if (existingUser == null) {
-            throw new UserNotFoundException("User with email " + user.getEmail() + " not found");
-        }
+    public void logout(User user) throws IdentityManagerException {
+        validateInput(user.getRefreshToken());
 
         try {
+            identityManagementOutputPort.logoutUser(user);
 
-            User updatedUser = identityManagementOutputPort.resetPassword(user);
-
-            existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
-            userPersistenceOutputPort.saveUser(existingUser);
-
-            return updatedUser;
-        } catch (AuthenticationException e) {
-            throw new AuthenticationException("Failed to reset password: " + e.getMessage());
+            log.info("User logged out successfully");
+        } catch (IdentityManagerException e) {
+            log.error("Logout failed for user: {}", e.getMessage());
+            throw e;
         }
     }
 
