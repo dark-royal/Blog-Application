@@ -53,7 +53,7 @@ public class CommentController {
     @PostMapping("/post/{postId}/comment")
     public ResponseEntity<CommentResponse> commentOnPost(
             @Valid @RequestBody CommentRequest commentRequest,
-            @PathVariable Long postId,
+            @PathVariable("postId") Long postId,
             @AuthenticationPrincipal User user
     ) throws PostNotFoundException, UserNotFoundException {
         Comment comment = commentRestMapper.toComment(commentRequest);
@@ -68,7 +68,7 @@ public class CommentController {
             @ApiResponse(responseCode = "404", description = "Post not found")
     })
     @GetMapping("/posts/{postId}/comments")
-    public ResponseEntity<List<CommentResponse>> viewAllPostComments(@PathVariable Long postId)
+    public ResponseEntity<List<CommentResponse>> viewAllPostComments(@PathVariable("postId") Long postId)
             throws PostNotFoundException {
         List<Comment> comments = viewAllPostCommentUseCase.viewAllPostCommentsByPostId(postId);
         List<CommentResponse> responseList = comments.stream()
@@ -77,17 +77,21 @@ public class CommentController {
         return ResponseEntity.ok(responseList);
     }
 
+
+
     @Operation(summary = "Delete a comment", description = "Deletes a comment from a post")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Comment deleted", content = @Content(schema = @Schema(implementation = DeleteCommentResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Access denied"),
             @ApiResponse(responseCode = "404", description = "Comment not found")
     })
     @SecurityRequirement(name = "Keycloak")
     @DeleteMapping
-    public ResponseEntity<DeleteCommentResponse> deleteComment(@RequestParam Long commentId,
-                                                               @RequestParam Long postId)
-            throws CommentNotFoundException {
-        deleteCommentUseCase.deleteComment(postId, commentId);
+    public ResponseEntity<DeleteCommentResponse> deleteComment(@RequestParam ("commentId")Long commentId,
+                                                               @RequestParam("postId") Long postId,
+                                                               @AuthenticationPrincipal User user) throws CommentNotFoundException, AccessDeniedException {
+
+        deleteCommentUseCase.deleteComment(commentId, postId, user);
 
         DeleteCommentResponse response = new DeleteCommentResponse();
         response.setMessage("Successfully deleted comment");
@@ -95,6 +99,7 @@ public class CommentController {
 
         return ResponseEntity.ok(response);
     }
+
 }
 
 

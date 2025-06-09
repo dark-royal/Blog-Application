@@ -13,6 +13,6 @@ public interface CommentPersistenceOutputPort {
 
     void deleteCommentById(Long id);
 
-    Comment getCommentByIdAndPostId(Long postId, Long commentId) throws CommentNotFoundException;
+    Comment getCommentByIdAndPostId(Long commentId, Long postId) throws CommentNotFoundException;
 
 }

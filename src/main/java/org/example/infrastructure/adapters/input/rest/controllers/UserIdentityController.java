@@ -57,9 +57,12 @@ public class UserIdentityController {
         user.setPassword(registerRequest.getPassword());
         User registeredUser = signUpUseCase.signUp(user);
 
+        RegisterUserResponse response = userRestMapper.toCreateUserResponse(registeredUser);
+        response.setMessage("Registration successful");
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(userRestMapper.toCreateUserResponse(registeredUser));
+                .body(response);
     }
 
     @Operation(summary = "User login", description = "Authenticates a user and returns a JWT token")

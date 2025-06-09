@@ -72,7 +72,7 @@ public class PostController {
     @SecurityRequirement(name = "Keycloak")
     @DeleteMapping("/{postId}")
     public ResponseEntity<DeletePostResponse> deletePost(@AuthenticationPrincipal User user,
-                                                         @PathVariable Long postId)
+                                                         @PathVariable("postId") Long postId)
             throws UserNotFoundException, AccessDeniedException, PostNotFoundException {
         deletePostUseCase.deletePost(user, postId);
 
@@ -92,7 +92,7 @@ public class PostController {
     @SecurityRequirement(name = "Keycloak")
     @PutMapping("/{id}")
     public ResponseEntity<EditPostResponse> editPost(@AuthenticationPrincipal User user,
-                                                     @PathVariable Long id,
+                                                     @PathVariable("id") Long id,
                                                      @Valid @RequestBody EditPostRequest editPostRequest)
             throws UserNotFoundException, PostAlreadyExistsException, AccessDeniedException, PostNotFoundException {
         Post post = postRestMapper.toPost(editPostRequest);
@@ -109,7 +109,7 @@ public class PostController {
             @ApiResponse(responseCode = "404", description = "Post not found")
     })
     @GetMapping("/{postId}")
-    public ResponseEntity<ViewPostResponse> viewPost(@PathVariable Long postId)
+    public ResponseEntity<ViewPostResponse> viewPost(@PathVariable("postId") Long postId)
             throws PostNotFoundException {
         Post post = viewPostUseCase.viewPost(postId);
 
@@ -128,7 +128,7 @@ public class PostController {
             @ApiResponse(responseCode = "404", description = "User or posts not found")
     })
     @GetMapping("/user/{id}")
-    public ResponseEntity<List<ViewAllUserPostResponse>> viewAllUserPost(@PathVariable Long id)
+    public ResponseEntity<List<ViewAllUserPostResponse>> viewAllUserPost(@PathVariable("id") Long id)
             throws UserNotFoundException, PostNotFoundException {
         List<Post> posts = viewAllPostUseCase.getAllPostsByUserId(id);
         List<ViewAllUserPostResponse> responseList = posts.stream()

@@ -19,6 +19,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -145,35 +146,123 @@ class CommentServiceTest {
         verify(commentPersistenceOutputPort).getAllCommentsByPostId(postId);
     }
 
+
+
     @Test
-    void deleteComment_shouldDeleteComment_whenValidCommentAndPostIdProvided() throws CommentNotFoundException {
+    void deleteComment_shouldDeleteComment_whenUserOwnsComment() throws CommentNotFoundException, AccessDeniedException, java.nio.file.AccessDeniedException {
         Long commentId = 5L;
         Long postId = 10L;
+
+        User currentUser = new User();
+        currentUser.setId(1L);
+
+        Post post = new Post();
+        post.setId(postId);
+        post.setUser(new User());
+        post.getUser().setId(99L);
 
         Comment comment = new Comment();
         comment.setId(commentId);
         comment.setPost(post);
+        comment.setUser(currentUser);
 
         when(commentPersistenceOutputPort.getCommentByIdAndPostId(commentId, postId)).thenReturn(comment);
 
-        commentService.deleteComment(commentId, postId);
+        commentService.deleteComment(commentId, postId, currentUser);
 
         verify(commentPersistenceOutputPort).getCommentByIdAndPostId(commentId, postId);
         verify(commentPersistenceOutputPort).deleteCommentById(commentId);
     }
 
     @Test
-    void deleteComment_shouldThrowException_whenCommentDoesNotExist() throws CommentNotFoundException {
+    void deleteComment_shouldDeleteComment_whenUserOwnsPost() throws CommentNotFoundException, AccessDeniedException, java.nio.file.AccessDeniedException {
         Long commentId = 5L;
         Long postId = 10L;
 
-        when(commentPersistenceOutputPort.getCommentByIdAndPostId(commentId, postId)).thenReturn(null);
 
-        assertThrows(NullPointerException.class, () -> commentService.deleteComment(commentId, postId));
+        User commentAuthor = new User();
+        commentAuthor.setId(2L);
+
+        User postOwner = new User();
+        postOwner.setId(1L);
+
+        Post post = new Post();
+        post.setId(postId);
+        post.setUser(postOwner);
+
+        Comment comment = new Comment();
+        comment.setId(commentId);
+        comment.setPost(post);
+        comment.setUser(commentAuthor);
+
+        when(commentPersistenceOutputPort.getCommentByIdAndPostId(commentId, postId)).thenReturn(comment);
+
+        commentService.deleteComment(commentId, postId, postOwner);
+
+        verify(commentPersistenceOutputPort).getCommentByIdAndPostId(commentId, postId);
+        verify(commentPersistenceOutputPort).deleteCommentById(commentId);
+    }
+
+
+
+    @Test
+    void deleteComment_shouldThrowAccessDenied_whenUserIsNotOwner() throws CommentNotFoundException {
+        Long commentId = 5L;
+        Long postId = 10L;
+
+        User currentUser = new User();
+        currentUser.setId(1L); // Not the post or comment owner
+
+        User commentOwner = new User();
+        commentOwner.setId(2L);
+
+        User postOwner = new User();
+        postOwner.setId(3L); // Another different person
+
+        Post post = new Post();
+        post.setId(postId);
+        post.setUser(postOwner); // Post is owned by someone else
+
+        Comment comment = new Comment();
+        comment.setId(commentId);
+        comment.setPost(post);
+        comment.setUser(commentOwner);
+
+        when(commentPersistenceOutputPort.getCommentByIdAndPostId(commentId, postId)).thenReturn(comment);
+
+        assertThrows(AccessDeniedException.class, () ->
+                commentService.deleteComment(commentId, postId, currentUser)
+        );
 
         verify(commentPersistenceOutputPort).getCommentByIdAndPostId(commentId, postId);
         verify(commentPersistenceOutputPort, never()).deleteCommentById(any());
     }
+
+
+
+
+    @Test
+    void deleteComment_shouldThrowCommentNotFound_whenCommentDoesNotExist() throws CommentNotFoundException {
+        Long commentId = 5L;
+        Long postId = 10L;
+
+        User currentUser = new User();
+        currentUser.setId(1L);
+
+        when(commentPersistenceOutputPort.getCommentByIdAndPostId(commentId, postId))
+                .thenThrow(new CommentNotFoundException("Comment not found"));
+
+        assertThrows(CommentNotFoundException.class, () ->
+                commentService.deleteComment(commentId, postId, currentUser)
+        );
+
+        verify(commentPersistenceOutputPort).getCommentByIdAndPostId(commentId, postId);
+        verify(commentPersistenceOutputPort, never()).deleteCommentById(any());
+    }
+
+
+
+
 
 
 

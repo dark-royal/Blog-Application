@@ -14,8 +14,8 @@ import org.example.domain.models.Comment;
 import org.example.domain.models.Post;
 import org.example.domain.models.User;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -53,9 +53,21 @@ public class CommentService implements CommentOnPostUseCase, ViewAllPostCommentU
 
 
     @Override
-    public void deleteComment(Long commentId, Long postId) throws CommentNotFoundException {
+    public void deleteComment(Long commentId, Long postId, User user)
+            throws CommentNotFoundException, AccessDeniedException {
+
         Comment comment = commentPersistenceOutputPort.getCommentByIdAndPostId(commentId, postId);
+
+        Long commentAuthorId = comment.getUser().getId();
+        Long postOwnerId = comment.getPost().getUser().getId();
+
+        if (!user.getId().equals(commentAuthorId) && !user.getId().equals(postOwnerId)) {
+            throw new AccessDeniedException("You are not allowed to delete this comment");
+        }
+
         commentPersistenceOutputPort.deleteCommentById(comment.getId());
     }
+
+
 
 }

@@ -54,12 +54,13 @@ public class CommentPersistenceAdapter implements CommentPersistenceOutputPort {
     }
 
     @Override
-    public Comment getCommentByIdAndPostId(Long postId,Long commentId) throws CommentNotFoundException {
-        CommentEntity commentEntity = commentRepository.findByPostIdAndId(postId,commentId);
+    public Comment getCommentByIdAndPostId(Long commentId, Long postId) throws CommentNotFoundException {
+        CommentEntity commentEntity = commentRepository.findByIdAndPostId(commentId, postId);
         if (commentEntity == null) {
-            throw  new CommentNotFoundException(ErrorMessages.COMMENT_NOT_FOUND);
+            throw new CommentNotFoundException(ErrorMessages.COMMENT_NOT_FOUND);
         }
         return commentPersistenceMapper.toComment(commentEntity);
     }
+
 
 }
