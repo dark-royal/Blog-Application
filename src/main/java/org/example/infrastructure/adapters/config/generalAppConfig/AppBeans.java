@@ -36,6 +36,8 @@ public class AppBeans {
         return new KeycloakAdapter(keycloak);
     }
 
+    
+
 
 
 //    @Bean

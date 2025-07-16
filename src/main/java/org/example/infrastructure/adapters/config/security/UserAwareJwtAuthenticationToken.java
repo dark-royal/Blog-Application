@@ -17,7 +17,6 @@ public class UserAwareJwtAuthenticationToken extends JwtAuthenticationToken {
     public UserAwareJwtAuthenticationToken(Jwt jwt,
                                            Collection<? extends GrantedAuthority> authorities,
                                            User user) {
-        // Fix: Use user.getEmail() or user.getUsername() as the principal name
         super(jwt, authorities, user.getEmail());
         this.user = user;
     }

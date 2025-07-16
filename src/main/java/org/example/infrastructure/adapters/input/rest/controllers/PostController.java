@@ -139,6 +139,83 @@ public class PostController {
 }
 
 
+//@Override
+//public void changePassword(String email, String oldPassword, String newPassword) {
+//    // Step 1: Validate input
+//    validateEmail(email);
+//    validatePassword(oldPassword);
+//    validatePassword(newPassword);
+//
+//    // Step 2: Fetch user from DB
+//    User user = userOutputPort.getUserByEmail(email);
+//
+//    // Step 3: Match old password
+//    if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+//        throw new IdentityManagementException("Old password is incorrect", HttpStatus.UNAUTHORIZED);
+//    }
+//
+//    // Step 4: Encode and set new password
+//    String encodedNewPassword = passwordEncoder.encode(newPassword);
+//    user.setNewPassword(encodedNewPassword); // For Keycloak
+//    user.setPassword(encodedNewPassword);    // For your database
+//
+//    // Step 5: Update password in Keycloak
+//    identityManagementOutputPort.changePassword(user);
+//
+//    // Step 6: Save updated password in local DB
+//    userOutputPort.saveUser(user);
+//}
+
+
+//@Test
+//    void testChangePasswordSuccess() {
+//        when(userOutputPort.getUserByEmail(email)).thenReturn(user);
+//        when(passwordEncoder.matches(oldPassword, encodedOldPassword)).thenReturn(true);
+//        when(passwordEncoder.encode(newPassword)).thenReturn(encodedNewPassword);
+//        when(userOutputPort.saveUser(any(User.class))).thenReturn(user);
+//
+//        assertDoesNotThrow(() -> userService.changePassword(email, oldPassword, newPassword));
+//
+//        verify(identityManagementOutputPort).changePassword(user);
+//        verify(userOutputPort).saveUser(user);
+//    }
+//
+//    @Test
+//    void testChangePasswordFails_InvalidOldPassword() {
+//        when(userOutputPort.getUserByEmail(email)).thenReturn(user);
+//        when(passwordEncoder.matches(oldPassword, encodedOldPassword)).thenReturn(false);
+//
+//        IdentityManagementException exception = assertThrows(
+//                IdentityManagementException.class,
+//                () -> userService.changePassword(email, oldPassword, newPassword)
+//        );
+//
+//        assertEquals("Old password is incorrect", exception.getMessage());
+//        assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatus());
+//
+//        verify(identityManagementOutputPort, never()).changePassword(any());
+//        verify(userOutputPort, never()).saveUser(any());
+//    }
+//
+//    @Test
+//    void testChangePasswordFails_InvalidEmail() {
+//        IllegalArgumentException exception = assertThrows(
+//                IllegalArgumentException.class,
+//                () -> userService.changePassword(" ", oldPassword, newPassword)
+//        );
+//        assertEquals("Email must not be empty", exception.getMessage());
+//    }
+//
+//    @Test
+//    void testChangePasswordFails_EmptyNewPassword() {
+//        IllegalArgumentException exception = assertThrows(
+//                IllegalArgumentException.class,
+//                () -> userService.changePassword(email, oldPassword, " ")
+//        );
+//        assertEquals("Password must not be empty", exception.getMessage());
+//    }
+
+
 
 
 

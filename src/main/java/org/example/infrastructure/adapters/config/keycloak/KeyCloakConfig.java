@@ -14,8 +14,7 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 @Getter
 
-public class
-KeyCloakConfig {
+public class KeyCloakConfig {
 
     @Value("${app.keycloak.admin.clientId}")
     private String clientId;

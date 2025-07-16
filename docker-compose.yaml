@@ -16,10 +16,8 @@ services:
     image: quay.io/keycloak/keycloak:25.0.0
     command: start-dev
     restart: always
-    links:
-      - postgres
     ports:
-      - "9082:8080"
+      - "9095:8080"
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin@1234
@@ -30,6 +28,26 @@ services:
       KC_DB_URL: jdbc:postgresql://postgres:5432/Blog-Application
       KC_HOSTNAME: localhost
       KC_FEATURES: token-exchange,admin-fine-grained-authz
+    networks:
+      - local
+
+  backend:
+    build:
+      context: .
+      dockerfile: DockerFile
+    container_name: bloggr-backend
+    restart: always
+    depends_on:
+      - postgres
+      - keycloak
+    ports:
+      - "8081:8083"
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/Blog-Application
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      KEYCLOAK_AUTH_SERVER_URL: http://keycloak:9082
     networks:
       - local
 
