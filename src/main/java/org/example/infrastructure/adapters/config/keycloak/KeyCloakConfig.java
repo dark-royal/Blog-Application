@@ -1,12 +1,21 @@
 package org.example.infrastructure.adapters.config.keycloak;
 
 import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-@Builder
-public class KeyCloakConfig {
+import org.springframework.context.annotation.Configuration;
+
+
+@Configuration
+@Setter
+@Getter
+
+public class
+KeyCloakConfig {
 
     @Value("${app.keycloak.admin.clientId}")
     private String clientId;
@@ -25,7 +34,7 @@ public class KeyCloakConfig {
         return KeycloakBuilder.builder()
                 .clientSecret(clientSecret)
                 .clientId(clientId)
-                .grantType("credentials")
+                .grantType("client_credentials")
                 .realm(realm)
                 .serverUrl(serverUrl)
                 .build();
