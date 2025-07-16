@@ -33,8 +33,6 @@ public class KeycloakAdapterTest {
 
 
 
-
-
     @Test
     public void testThatUserCanBeCreated() throws IdentityManagerException {
         try {

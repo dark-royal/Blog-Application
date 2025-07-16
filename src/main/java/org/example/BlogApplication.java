@@ -18,7 +18,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
                 version = "v1",
                 contact = @Contact(
                         name = "Praise",
-                        email = "praiseoyewole560@gamil.com"
+                        email = "praiseoyewole560@gmaill.com"
                 )
         ),
         servers = {

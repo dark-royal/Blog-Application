@@ -14,7 +14,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimNames;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,11 +33,11 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
     @Transactional(readOnly = true)
     public AbstractAuthenticationToken convert(@NonNull Jwt jwt) {
         try {
-            log.info("Converting JWT token. Subject: {}", jwt.getSubject());
-            log.info("JWT Claims: {}", jwt.getClaims().keySet());
+//            log.info("Converting JWT token. Subject: {}", jwt.getSubject());
+//            log.info("JWT Claims: {}", jwt.getClaims().keySet());
 
             String userIdentifier = getUserIdentifierFromJwt(jwt);
-            log.info("Extracted user identifier: {}", userIdentifier);
+//            log.info("Extracted user identifier: {}", userIdentifier);
 
             User user = userPersistenceOutputPort.getUserByEmail(userIdentifier);
             log.info("Found user: {}", user.getEmail());

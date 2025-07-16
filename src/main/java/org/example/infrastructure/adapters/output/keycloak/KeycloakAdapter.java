@@ -72,7 +72,6 @@ public class KeycloakAdapter implements IdentityManagementOutputPort {
         }
         UserRepresentation userRepresentation = createUserRepresentation(user);
         log.info("Using realm: {}", keycloak.realm(realm).toRepresentation().getRealm());
-        log.debug("Creating user with email: {}, password: {}", user.getEmail(), user.getPassword());
         try (Response response = getUserResource().create(userRepresentation)) {
             log.info("Keycloak user creation response status: {}, body: {}", response.getStatus(), response.readEntity(String.class));
             log.info("Sent to Keycloak: {}", userRepresentation);
@@ -210,7 +209,7 @@ public class KeycloakAdapter implements IdentityManagementOutputPort {
         if(userUsername == null) {
             throw new UserNotFoundException(ErrorMessages.USER_NOT_FOUND);
         }
-        return userUsername.getFirst();
+        return userUsername.get(0);
     }
 
 
