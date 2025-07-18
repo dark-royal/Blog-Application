@@ -34,7 +34,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: DockerFile
+      dockerfile: Dockerfile
     container_name: bloggr-backend
     restart: always
     depends_on:

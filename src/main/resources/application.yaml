@@ -1,23 +1,51 @@
-
 app:
   keycloak:
     admin:
-      clientId: identity
-      clientSecret: zyvcLJL6b3OVefAHT0CSmclYqK0A1H4e
-    realm: UserIdentity
-    serverUrl: http://localhost:9082
-    tokenUrl: http://localhost:9082/realms/UserIdentity/protocol/openid-connect/token
-    logoutUrl: http://localhost:9082/realms/UserIdentity/protocol/openid-connect/logout
-
+      clientId: ${KEYCLOAK_CLIENT_ID}
+      clientSecret: ${KEYCLOAK_CLIENT_SECRET}
+    realm: ${KEYCLOAK_REALM}
+    serverUrl: ${KEYCLOAK_SERVER_URL}
+    tokenUrl: ${KEYCLOAK_TOKEN_URL}
+    logoutUrl: ${KEYCLOAK_LOGOUT_URL}
 
 spring:
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:9082/realms/UserIdentity
-          jwk-set-uri: http://localhost:9082/realms/UserIdentity/protocol/openid-connect/certs
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI}
+
 server:
   port: 8083
+
 keycloak:
   principal-attribute: preferred_username
+
+
+
+
+#
+#app:
+#  keycloak:
+#    admin:
+#      clientId: identity
+#      clientSecret: zyvcLJL6b3OVefAHT0CSmclYqK0A1H4e
+#    realm: UserIdentity
+#    serverUrl: http://localhost:9082
+#    tokenUrl: http://localhost:9082/realms/UserIdentity/protocol/openid-connect/token
+#    logoutUrl: http://localhost:9082/realms/UserIdentity/protocol/openid-connect/logout
+#
+#
+#spring:
+#  security:
+#    oauth2:
+#      resourceserver:
+#        jwt:
+#          issuer-uri: http://localhost:9082/realms/UserIdentity
+#          jwk-set-uri: http://localhost:9082/realms/UserIdentity/protocol/openid-connect/certs
+#server:
+#  port: 8083
+#keycloak:
+#  principal-attribute: preferred_username
+
