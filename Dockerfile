@@ -5,7 +5,8 @@ FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
 
 # Copy the jar into the container
-COPY target/Blog-Application-1.0-SNAPSHOT.jar app.jar
+COPY target/*.jar app.jar
+
 
 # Run the Spring Boot application
 ENTRYPOINT ["java", "-jar", "app.jar"]
